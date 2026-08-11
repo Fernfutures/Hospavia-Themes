@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HospavIA · Transformación Hospitalaria en América Latina</title>
+<style>
+  :root{
+    --bg:#FAF9F6; --ink:#1D1F21; --soft:#6E7276; --faint:#A6A9AC;
+    --rule:rgba(0,0,0,.075); --navy:#16324F; --gold:#B8964F;
+    --digital:#0F6E56; --infra:#185FA5; --intel:#5B4B9E;
+    --serif:Cambria,"Bookman Old Style",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       font-size:15px;line-height:1.5;letter-spacing:-.006em}
+  .wrap{max-width:1240px;margin:0 auto;padding:34px 32px 120px;
+        transition:max-width .6s var(--ease)}
+  body.cofocus .wrap{max-width:min(1560px,96vw)}
+
+  /* ---------- masthead ---------- */
+  .mast{display:flex;align-items:center;gap:14px}
+  .logo{font-family:var(--serif);font-size:17px;font-weight:700;color:var(--navy);letter-spacing:-.01em}
+  .logo span{color:var(--gold)}
+  .mast .sub{font-size:12.5px;color:var(--faint);font-weight:400}
+  .pw{display:flex;align-items:center;gap:11px;margin-left:24px}
+  .pw span{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+           color:var(--faint);font-weight:500;white-space:nowrap}
+  .pw img{height:30px;width:auto;display:block}
+
+  /* ---------- hero ---------- */
+  .pick{padding:54px 0 0;display:flex;flex-direction:column;align-items:center}
+  header{padding:60px 0 66px;text-align:center;display:flex;flex-direction:column;align-items:center}
+  body.cofocus header{padding:44px 0 46px}
+  header .ev{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);
+             font-weight:600;margin-bottom:20px}
+  h1{font-family:var(--serif);font-size:clamp(28px,3.6vw,46px);line-height:1.12;
+     letter-spacing:-.028em;font-weight:400;margin:0;color:var(--ink);
+     max-width:none;white-space:nowrap}
+  h1 em{font-style:normal;font-weight:400;color:var(--navy);display:block;margin-top:9px;
+        font-size:.78em;white-space:nowrap}
+  header p{font-size:15.5px;line-height:1.55;color:var(--soft);margin:24px 0 0;
+           max-width:44ch;font-weight:400;letter-spacing:-.008em}
+
+
+  /* ---------- segmented control ---------- */
+  .seg-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+             font-weight:500;margin-bottom:14px;text-align:center}
+  .seg{position:relative;display:inline-flex;background:rgba(0,0,0,.045);border-radius:999px;
+       padding:3px;gap:0}
+  .seg .thumb{position:absolute;top:3px;bottom:3px;border-radius:999px;background:#fff;
+              box-shadow:0 1px 3px rgba(0,0,0,.09),0 0 0 .5px rgba(0,0,0,.04);
+              transition:transform .48s var(--ease),width .48s var(--ease);opacity:0}
+  .seg.on .thumb{opacity:1}
+  .seg.small button{font-size:12.5px;padding:7px 13px}
+  .seg button{position:relative;z-index:1;border:none;background:none;font:inherit;
+              font-size:14px;font-weight:450;letter-spacing:-.008em;color:var(--soft);
+              padding:9px 20px;border-radius:999px;cursor:pointer;white-space:nowrap;
+              transition:color .34s var(--ease)}
+  .seg button[aria-pressed="true"]{color:var(--ink);font-weight:550}
+  .seg button:disabled{color:var(--faint);cursor:default}
+  .seg button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+  /* ---------- columns ---------- */
+  .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:78px}
+  .col{padding:0 30px;border-left:1px solid var(--rule)}
+  .col .rule,.col h2{transition:opacity .5s var(--ease)}
+  .col:not(.live) .rule{opacity:.28}
+  .col:not(.live) h2{opacity:.42}
+  .col:first-child{padding-left:0;border-left:none}
+  .col:last-child{padding-right:0}
+  .col .rule{width:26px;height:2px;border-radius:2px;background:var(--c);margin-bottom:16px}
+  .col h2{font-family:var(--serif);font-size:19px;line-height:1.22;letter-spacing:-.014em;
+          font-weight:400;margin:0;color:var(--ink);min-height:46px}
+  .col .body{min-height:2px}
+  .col .tot{margin:0;display:flex;align-items:baseline;gap:8px;min-height:0}
+  .col .tot:empty{margin:0}
+  .col .tot:not(:empty){margin:14px 0 24px}
+  .col .tot .await{font-size:12.5px;color:var(--faint);letter-spacing:-.004em}
+  .col .tot span{font-size:11px;color:var(--faint);letter-spacing:.06em;text-transform:uppercase;font-weight:500}
+
+  /* ---------- initiatives ---------- */
+  .row{padding:20px 0;border-top:1px solid var(--rule);opacity:0;transform:translateY(10px)}
+  .row.in{animation:rise .78s var(--ease) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .row .hd{display:flex;justify-content:space-between;align-items:baseline;gap:14px}
+  .row .nm{font-size:14.5px;line-height:1.32;letter-spacing:-.008em;color:var(--ink);font-weight:450}
+  .row .n{font-family:var(--serif);font-size:21px;font-weight:400;color:var(--c);
+          font-variant-numeric:tabular-nums;letter-spacing:-.015em}
+  .row .desc{font-size:12.5px;line-height:1.45;color:var(--soft);margin-top:7px;
+             letter-spacing:-.004em;max-width:40ch}
+  .row .bar{height:2px;background:rgba(0,0,0,.06);border-radius:2px;margin-top:15px;overflow:hidden}
+  .row .bar i{display:block;height:100%;width:0;background:var(--c);border-radius:2px;
+              transition:width 1.15s var(--ease)}
+  .subs{margin-top:11px;display:flex;flex-wrap:wrap;gap:4px 14px}
+  .subs span{font-size:11.5px;color:var(--faint);letter-spacing:-.002em;white-space:nowrap;
+             border:none;background:none;font-family:inherit;padding:2px 0;cursor:pointer;
+             border-bottom:1px solid transparent;transition:color .25s var(--ease),border-color .25s var(--ease)}
+  .subs span:hover{color:var(--c);border-bottom-color:var(--c)}
+  .subs span:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .subs span.zero{cursor:default}
+  .subs span.zero:hover{color:var(--faint);border-bottom-color:transparent}
+  .subs span.zero{opacity:.45}
+
+  .empty{font-size:14px;color:var(--faint);padding:26px 0 6px;line-height:1.5;max-width:26ch}
+  /* ---------- focus mode ---------- */
+  .branch{display:block;width:100%;height:76px;margin:0 auto -6px;overflow:visible}
+  .branch path{fill:none;stroke:var(--rule);stroke-width:1.25;
+               stroke-dasharray:1400;stroke-dashoffset:1400;
+               animation:draw 1.5s var(--ease) .25s forwards}
+  .branch path.head{stroke-dasharray:40;stroke-dashoffset:40;stroke-width:1.4;
+                    stroke-linecap:round;stroke-linejoin:round;
+                    animation:draw .5s var(--ease) 1.25s forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  body.focused .branch{opacity:.25;transition:opacity .5s var(--ease)}
+  .search{position:relative;margin-left:auto;width:min(280px,42vw)}
+  .search input{width:100%;font:inherit;font-size:13px;letter-spacing:-.008em;color:var(--ink);
+      background:#fff;border:1px solid var(--rule);border-radius:999px;padding:7px 15px;
+      transition:border-color .3s var(--ease),box-shadow .3s var(--ease);text-align:center}
+  .search input::placeholder{color:var(--faint)}
+  .search input:focus{outline:none;border-color:var(--gold);
+      box-shadow:0 0 0 3px rgba(184,150,79,.14)}
+  .sug{position:absolute;top:calc(100% + 6px);left:auto;right:0;width:300px;background:#fff;border-radius:10px;
+      box-shadow:0 8px 30px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.06);padding:5px;z-index:20;
+      display:none;max-height:290px;overflow:auto;text-align:left}
+  .sug.on{display:block}
+  .sug button{display:flex;justify-content:space-between;align-items:baseline;gap:10px;width:100%;
+      border:none;background:none;font:inherit;font-size:13.5px;color:var(--ink);cursor:pointer;
+      padding:9px 12px;border-radius:7px;text-align:left}
+  .sug button:hover,.sug button.hi{background:rgba(0,0,0,.045)}
+  .sug button em{font-style:normal;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+      color:var(--faint);white-space:nowrap}
+  .markbar{display:none;margin:0 0 26px;padding:12px 18px;border-radius:10px;
+      background:rgba(184,150,79,.09);border:1px solid rgba(184,150,79,.28);
+      font-size:13px;color:var(--ink);letter-spacing:-.006em;text-align:center}
+  body.marked .markbar{display:block;animation:rise .5s var(--ease) both}
+  .markbar b{font-weight:600}
+  .mkhd{padding-bottom:11px;border-bottom:1px solid rgba(184,150,79,.25)}
+  .mklist{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;align-items:center;padding-top:11px}
+  .mklab{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);
+         font-weight:600;margin-right:4px}
+  .mkco{display:inline-flex;align-items:baseline;gap:6px;font-size:12.5px;color:var(--soft);
+        background:#fff;border:1px solid var(--rule);border-radius:999px;padding:4px 11px}
+  .mkco.a{border-color:var(--gold);color:var(--ink);font-weight:500}
+  .mkco.none{color:var(--faint);font-style:italic}
+  .mkco i{font-style:normal;font-size:10px;color:var(--faint);font-variant-numeric:tabular-nums}
+  .markbar em{font-style:normal;font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+      color:var(--gold);font-weight:600}
+  .markbar button{border:none;background:none;font:inherit;font-size:12.5px;color:var(--soft);
+      cursor:pointer;border-bottom:1px solid var(--rule);padding:0;margin-left:10px}
+  .markbar button:hover{color:var(--ink);border-bottom-color:var(--gold)}
+  .subs span.match{opacity:1;color:var(--c);font-weight:600;border-bottom-color:var(--c)}
+  .subs span.faded{opacity:.22}
+  body.cofocus .cols{grid-template-columns:1.5fr .78fr .78fr .78fr 1.5fr;padding:0;
+        transition:grid-template-columns .6s var(--ease)}
+  body.cofocus .panel{position:static;width:auto;display:block;opacity:1;transform:none;
+        pointer-events:auto;grid-row:1}
+  body.cofocus #pSell{grid-column:1;padding:0 34px 0 0;border-right:1px solid var(--rule)}
+  body.cofocus #pBuy{grid-column:5;padding:0 0 0 34px;border-left:1px solid var(--rule)}
+  body.cofocus .col{padding:0 13px;grid-row:1;border-left:none}
+  body.cofocus .col:nth-of-type(1){grid-column:2}
+  body.cofocus .col:nth-of-type(2){grid-column:3;border-left:1px solid var(--rule)}
+  body.cofocus .col:nth-of-type(3){grid-column:4;border-left:1px solid var(--rule)}
+  body.cofocus .col h2{font-size:14px;min-height:36px;line-height:1.2}
+  body.cofocus .row .nm{font-size:12.5px}
+  body.cofocus .row .desc{display:none}
+  body.cofocus .subs span{font-size:10.5px}
+  body.cofocus .subs span.match{font-size:11.5px}
+  .org.solo-one{border-top:none;padding-top:0}
+  .org.solo-one .nm{font-family:var(--serif);font-size:19px;font-weight:400;letter-spacing:-.014em;
+        padding-bottom:10px;border-bottom:1px solid var(--rule)}
+  .cols{position:relative;margin-top:0;max-width:1080px;margin-left:auto;margin-right:auto;transition:min-height .5s var(--ease)}
+  .col{transition:opacity .62s var(--ease),transform .78s var(--ease)}
+  .col.mute{opacity:0;pointer-events:none}
+  .col.sel{position:relative;z-index:3;background:var(--bg)}
+  .panel{position:absolute;top:0;width:33.333%;opacity:0;transform:translateY(12px);
+         pointer-events:none;
+         transition:opacity .6s var(--ease) .18s,transform .6s var(--ease) .18s}
+  #pSell{left:0;padding-left:0;padding-right:38px}
+  #pBuy{right:0;padding-right:0;padding-left:38px}
+  body.focused .panel{opacity:1;transform:none;pointer-events:auto}
+  .row{transition:opacity .5s var(--ease),transform .5s var(--ease),
+       max-height .68s var(--ease),padding .55s var(--ease),margin .55s var(--ease)}
+  .row.hide{opacity:0;transform:translateY(-6px);max-height:0;padding:0;margin:0;
+            overflow:hidden;border-top-color:transparent}
+  .row.solo{border-top:none;padding-top:0}
+  .col .tot{transition:opacity .45s var(--ease),max-height .6s var(--ease),margin .5s var(--ease)}
+  .col .tot.hide{opacity:0;max-height:0;margin:0;overflow:hidden}
+  .row .bar{transition:opacity .4s var(--ease)}
+  .row.solo .bar{opacity:0}
+  .subs span{transition:opacity .4s var(--ease),font-size .4s var(--ease),color .3s var(--ease)}
+  .subs span.dim{opacity:.26;font-size:10.5px}
+  .subs span.on{opacity:1;font-size:13.5px;color:var(--c);
+        border-bottom-color:var(--c);font-weight:500;letter-spacing:-.006em}
+  .panel{padding:0 34px}
+  .panel{display:flex;flex-direction:column}
+  .panel > h3{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+              font-weight:500;margin:0 0 20px}
+  .back{border:none;background:none;font:inherit;font-size:13px;color:var(--soft);cursor:pointer;
+        padding:0;display:inline-flex;align-items:center;gap:7px;letter-spacing:-.006em;
+        transition:color .25s var(--ease)}
+  .back:hover{color:var(--ink)}
+  .fhead{margin:8px 0 44px;padding-bottom:26px;border-bottom:1px solid var(--rule)}
+  .fhead .rule{width:26px;height:2px;border-radius:2px;background:var(--c);margin:26px 0 16px}
+  .fhead h2{font-family:var(--serif);font-size:38px;line-height:1.06;letter-spacing:-.024em;
+            font-weight:400;margin:0;color:var(--ink)}
+  .fhead p{font-size:15px;color:var(--soft);margin:12px 0 0;max-width:46ch;letter-spacing:-.006em}
+  .fhead .k{font-family:var(--serif);font-size:15px;color:var(--c);margin-top:14px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .side{padding:0 34px}
+  .side:first-child{padding-left:0}
+  .side:last-child{padding-right:0;border-left:1px solid var(--rule)}
+  .side > h3{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+             font-weight:500;margin:0 0 22px}
+  .org{padding:13px 0;border-top:1px solid var(--rule);cursor:pointer;
+       transition:opacity .42s var(--ease),max-height .55s var(--ease),
+                  padding .45s var(--ease),margin .45s var(--ease),transform .45s var(--ease)}
+  .panel.solo .org.anchor,.panel.solo .org.other{opacity:0;max-height:0;padding:0;margin:0;
+                   overflow:hidden;border-top-color:transparent;transform:translateY(-6px);
+                   pointer-events:none}
+  .panel.solo .org.anchor.open{opacity:1;max-height:6000px;padding:0 0 13px;transform:none;
+                        border-top:none;pointer-events:auto;order:-1}
+  .panel h3{transition:margin .4s var(--ease)}
+  .org .nm{display:flex;justify-content:space-between;align-items:center;gap:10px;
+           transition:color .25s var(--ease);font-size:15px;font-weight:500}
+  .panel.solo .org.open .nm{padding-bottom:10px;border-bottom:1px solid var(--rule);
+        font-family:var(--serif);font-size:19px;font-weight:400;letter-spacing:-.014em}
+  .org:hover .nm{color:var(--c)}
+  .org .chev{font-size:16px;color:var(--faint);line-height:1;
+             transition:transform .4s var(--ease),color .25s var(--ease)}
+  .org.open .chev{transform:rotate(90deg);color:var(--c)}
+  .org.open .nm{color:var(--c)}
+  .org > .det{max-height:0;opacity:0;overflow:hidden;
+            transition:max-height .6s var(--ease),opacity .4s var(--ease),margin .45s var(--ease)}
+  .org.open > .det{max-height:4000px;opacity:1;margin-top:9px}
+  .dvw{margin-top:8px;cursor:pointer;border-radius:6px;
+       border:1px solid transparent;transition:background .3s var(--ease),border-color .3s var(--ease)}
+  .dvw:hover{background:rgba(0,0,0,.022)}
+  .dvw.open,.dvw.filt{background:rgba(0,0,0,.028);border-color:var(--rule)}
+  .dvn{display:flex;justify-content:space-between;align-items:center;gap:8px;
+       font-size:12.5px;color:var(--soft);letter-spacing:-.004em;padding:9px 11px;
+       transition:color .25s var(--ease)}
+  .dvw:hover .dvn{color:var(--c)}
+  .dvw.open .dvn,.dvw.filt .dvn{color:var(--c);font-weight:500}
+  .dvw .chev{font-size:13px}
+  .dvw > .det{max-height:0;opacity:0;overflow:hidden;padding:0 11px;
+              transition:max-height .55s var(--ease),opacity .38s var(--ease)}
+  .dvw.open > .det,.dvw.filt > .det{max-height:1600px;opacity:1}
+  .ddesc{font-size:11.5px;line-height:1.55;color:var(--soft);letter-spacing:-.003em;
+         padding:10px 0 11px;border-top:1px solid var(--rule)}
+  .ddesc span{display:block;font-size:9px;letter-spacing:.11em;text-transform:uppercase;
+              color:var(--faint);font-weight:600;margin-bottom:4px}
+  .why{font-size:11.5px;line-height:1.5;color:var(--ink);letter-spacing:-.003em;
+       padding:10px 12px 11px;margin:0 -1px;border-radius:6px;
+       background:color-mix(in srgb,var(--c) 6%,transparent);
+       border-left:2px solid color-mix(in srgb,var(--c) 45%,transparent)}
+  .why span{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+            color:var(--c);font-weight:600;margin-bottom:5px}
+  .dvw.open > .det,.dvw.filt > .det{padding-bottom:9px}
+  .org.dimmed,.dvw.dimmed{opacity:0;max-height:0;padding:0;margin:0;overflow:hidden;
+        border-top-color:transparent;pointer-events:none;
+        transition:opacity .34s var(--ease),max-height .48s var(--ease),
+                   padding .42s var(--ease),margin .42s var(--ease)}
+  .tier{margin-bottom:26px}
+  .th{display:flex;align-items:center;gap:9px;width:100%;border:none;background:none;
+      font:inherit;cursor:pointer;padding:9px 0;border-bottom:1px solid var(--rule);
+      color:var(--c);transition:opacity .25s var(--ease)}
+  .th:hover{opacity:.72}
+  .th span{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+  .th em{font-style:normal;font-size:9px;color:#fff;background:var(--c);border-radius:999px;
+         min-width:15px;height:15px;display:inline-grid;place-items:center;padding:0 4px;opacity:.85}
+  .th .chev{margin-left:auto;font-size:14px;color:var(--c);
+            transition:transform .4s var(--ease)}
+  .tier.open .th .chev{transform:rotate(90deg)}
+  .tbody{max-height:0;opacity:0;overflow:hidden;
+         transition:max-height .55s var(--ease),opacity .4s var(--ease),margin .45s var(--ease)}
+  .tier.open .tbody{max-height:6000px;opacity:1;margin-top:10px}
+  .tdef{font-size:11px;color:var(--faint);margin-bottom:9px;letter-spacing:-.002em}
+  .org.other{cursor:default;border-top:none;padding:7px 0}
+  .org.other .nm{font-size:13px;font-weight:400;color:var(--faint)}
+  .org.other:hover .nm{color:var(--faint)}
+  .org.anchor{border-top:none;padding:9px 0}
+  .tag{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--c);
+       border:1px solid var(--c);border-radius:9px;padding:1px 7px;margin-left:auto;margin-right:8px;
+       opacity:.7}
+  .dvw.only{opacity:0;max-height:0;margin:0;padding:0;overflow:hidden;pointer-events:none;
+            transition:opacity .3s var(--ease),max-height .45s var(--ease),margin .4s var(--ease)}
+  .panel.drill .tier:not(:has(.org.open)){opacity:0;max-height:0;margin:0;overflow:hidden;
+            pointer-events:none;transition:opacity .3s var(--ease),max-height .45s var(--ease)}
+  .panel.drill .org.other{display:none}
+  .tier.dimmed{opacity:0;max-height:0;margin:0;overflow:hidden;pointer-events:none;
+        transition:opacity .3s var(--ease),max-height .45s var(--ease),margin .4s var(--ease)}
+  .panel.drill .dvw.open{margin-top:2px}
+  .panel.solo .tier{opacity:0;max-height:0;margin:0;overflow:hidden;pointer-events:none;
+        transition:opacity .32s var(--ease),max-height .46s var(--ease),margin .42s var(--ease)}
+  .panel.solo .tier:has(.org.open){opacity:1;max-height:6000px;margin-bottom:26px;pointer-events:auto}
+  .filtbar{font-size:11.5px;color:var(--soft);padding:8px 0 0;display:none}
+  body.filtered .filtbar{display:block}
+  .filtbar button{border:none;background:none;font:inherit;color:var(--c);cursor:pointer;
+                  padding:0;border-bottom:1px solid currentColor;margin-left:8px}
+  .ud{font-size:12px;color:var(--soft);margin-top:11px;letter-spacing:-.004em}
+  .ud.muted{color:var(--faint);font-style:italic}
+  .org:first-of-type{border-top:none;padding-top:0}
+  .org .nm{font-size:15px;color:var(--ink);font-weight:500;letter-spacing:-.008em}
+  .org .dv{font-size:11.5px;color:var(--faint);margin-top:8px;letter-spacing:.04em;
+           text-transform:uppercase;font-weight:500}
+  .org .ex{font-size:12px;color:var(--faint);margin-top:6px;line-height:1.45}
+  .ppl{margin-top:10px}
+  .ppl{border-top:1px solid var(--rule);padding-top:4px}
+  .pphead{margin-top:14px;padding:9px 0 0;border-top:1px solid var(--ink);
+          font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+          color:var(--ink);font-weight:700;opacity:.55}
+  .fn{padding:11px 0 5px}
+  .fn + .fn{border-top:1px solid var(--rule)}
+  .fn h5{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--c);
+         font-weight:600;margin:0 0 7px;display:flex;align-items:center;gap:7px}
+  .fn h5 i{font-style:normal;font-size:9px;letter-spacing:0;background:var(--c);color:#fff;
+           border-radius:999px;min-width:15px;height:15px;display:inline-grid;place-items:center;
+           padding:0 4px;opacity:.85}
+  .crew{display:flex;flex-direction:column;gap:7px}
+  .pc{display:flex;align-items:center;gap:9px}
+  .av{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;
+      font-size:9.5px;font-weight:600;letter-spacing:.02em;color:var(--c);
+      background:color-mix(in srgb,var(--c) 13%,transparent);
+      box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 22%,transparent)}
+  .tx{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+  .tx b{font-size:12.5px;font-weight:500;color:var(--ink);letter-spacing:-.006em}
+  .tx em{font-style:normal;font-size:10.5px;color:var(--soft)}
+  .fn .p{grid-template-columns:1fr;padding:4px 0;border-bottom:none}
+  .fn.none h5{color:var(--faint)}
+  .research{font-size:11.5px;color:var(--faint);font-style:italic;padding:2px 0 3px}
+  .p{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:8px 0;
+     border-bottom:1px solid rgba(0,0,0,.04)}
+  .p:last-child{border-bottom:none}
+  .p .a{font-size:12.5px;color:var(--ink);letter-spacing:-.006em;font-weight:500;
+        grid-column:1;line-height:1.3}
+  .p .b{font-size:11px;color:var(--soft);grid-column:1;line-height:1.35}
+  .p .c{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);
+        white-space:nowrap;grid-column:2;grid-row:1;align-self:start;padding-top:1px}
+  .none{font-size:13px;color:var(--faint);padding:6px 0 2px}
+  @media (max-width:880px){.two{grid-template-columns:1fr}.side{padding:30px 0 0}
+    .side:last-child{border-left:none;border-top:1px solid var(--rule)}.side:first-child{padding-top:0}}
+  .backrow{margin-top:34px;min-height:20px;text-align:center}
+  footer{margin-top:96px;padding-top:22px;border-top:1px solid var(--rule);
+         font-size:11.5px;line-height:1.6;color:var(--faint);max-width:70ch}
+
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}
+    .branch path{stroke-dashoffset:0}
+    .col{opacity:1;transform:none}.row{opacity:1;transform:none}}
+  @media (max-width:880px){
+    .wrap{padding:26px 22px 80px} h1{white-space:normal} header{padding:40px 0 40px}
+    .pick{padding:34px 0 0} .branch{display:none}
+    .cols{grid-template-columns:1fr;gap:0}
+    .col{padding:34px 0 0;border-left:none;border-top:1px solid var(--rule)}
+    .col:first-child{border-top:none;padding-top:0}
+    .col h2{min-height:0}
+    .seg{display:flex;width:100%} .seg button{flex:1;padding:9px 10px;font-size:13px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="mast">
+    <div class="logo">Hospav<span>IA</span></div>
+    <div class="sub">Mapa de demanda</div>
+    <div class="search">
+      <input id="q" type="search" autocomplete="off" spellcheck="false"
+             placeholder="Buscar una compañía" aria-label="Buscar una compañía">
+      <div class="sug" id="sug"></div>
+    </div>
+    <div class="pw"><span>Impulsado por</span>
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAABACAYAAABImajiAAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAAAN6ElEQVR42u2de4xcVR3HPzO7251a7C5gaAtYyyOCmCgFgqVVBKqIYLTlpVLDaylJWyTyVAE1EEsCSI2EgqluUaRCwNaCbSFoEY2LoF2oRh4BsbWxdNtAu1Vqd7adjn+c33F+e7j3zn3t7uxyfslk7t45r/s753t+z3O3MPnQYxlGOgK4GFgI9OHJ0zBRU9v4iUPeJ1AFbgWOA7bI92seDJ6Gi4rDAIIKcD3wTaAV6AbWAPOBdj8lnkY7ECwIbgBuk3v7gAOBDcCDwOXytydPoxIIGgQLnf6tOrQBeBjoACb4qfE02oAQBgKAglNuI3A/cBEw0U+Pp9EChCgQALSo633y3QP8FLgQmOKnyNNIB0I9ENgyQbQV6ATOBw4LkB6ePI0IIGjv0MKIclGL+y1gCXAeJt5Q9WDwNJKAEOQdCqPmOr/3ChhmAUd7MHgaKUCIKwmS9N8LLAbOAj7sweCp0YGgQXBbzDpxF3SfgOEM4FgPBk+NCoQ0IEhqAPcBdwMnA8d7MHhqNCCkBQGYFIskVBbJMAOY5sHgqVGAkAUEaakC3CVSYYYHg6fhBkIeIBibof/FYi/M9GDwlFmtSZmGbUFwHXB7hv4vA44E+oFtKRbzn4FPY7JW/+HB4GkogWBBcA1wR4a+ZwDPYJLtzhcwvJFiMXcDpwEHA6/mBIYmZcy7H9fYDyprz1zUa7NJpHI1wobaF+FoaAqpm2RMQf3r56r3rC5fgurG+S0Nf8LqhPUdei8pEDQIvpdhoZ0E/FEmehfwPDAbE2DblKK9F6TN9+cEhmrGsknuVevYQ2nGmUf/1Qx8qeY45moOvHc3lxZg7wBEJDiqmScInlXtaVoArAe6UrY9B9gNrBAwJFnQtvwRIukqwB6nTB9wLbBd7Ju7gf1558m6VuDrwN/l71mYsxa9Ae11Y/Kq+lTdMiaAeI3w4ltOvXZgESZDdwmwUtVbIHXfVpNdAfYDfiO2FcClwDlS5xbhu+XBIuAo4J/AVVLmDuFNH7VkScufMvANTI7YDSLtdwJXY5Io9ZgnAM9Jn3bMZwJXhPBnPSYjuTeAPwsC6pSEp25A9xzh5xSRMtuF73cmAUJeILDqUFPEbnen2B1bE7ZtJ3GOMHB5QjDYsifJGMPoUGCzAGB7RLlPAWvl+rvAjRFlXxLe9KqJ/jZws/x+GCZF3Y5xIuaIKzLhN8kC6JNNYHZIP08Cn5HrpcAlapHozaMXaBN1tU3a7SPa3X24qLnPA1Pl3jHAy3Ktx/yqAM0+a1Ripi0/Ddih6twofA2iDTIeW/ZSWfRB9H3g6uYGA0GHTMjWFO1bz9Eymdg5cp1FLdomO5Klvc7uv1MWSlktersrbVZ/71bXv5eJHScer4NkwXTIJlBQu6Glz2NcxmOkL7sLtzptu/WekzFWZEd+MqRc2WnDAmGHunefLN6SbBbIwn5B+GLHsSNCrbFj3hEx5mdkY9D8+SDmKO/CEP68LIvfeiKfU/2VMOfjLT0om8rXpOxVwJLmBgCB3YU6ZIBdGfqxYFgOnJ0BDJbWqF0zrC+7A50Voo+6i2yJGtMM4A9yfboAIUiCfUmA0F/H+HNpvuzQ9cYUZkTqPubJ9/HAOrl+VN0vJDBOo8beKdLK7et0AUI1ZFf/Uci6OpbaicdfAhfIdQ/wA7meWRwCEHy8jiSoyiLqkV01D0O3IJKlV8RiWmqVtppDvEbE9C5pGiu8KAAvAv9WqkOUXXVYQpvHSqaC6MRZ+WqfqxTCn7zI5Y9VPycoqRxUp6CeF2oxsiNVuZXye6uz4R5dHAIQdEWAoCRIniIGDikmOwoMq0XN6sjYVjWmByNuuYp89ymV4r0RE41IuKzjz4OvST07aaiijPG3ncW+L+ZzWnC2qTK75PeyY2QfWBxGELQCT2GOZPaSLcpcDwwbM4JhsKjq8J2IiT6fdx9pXrSIjRQXdHsdz5b1XGmwWVWzVBxGEDwuIv9NwoMgeYFhrYBhQYNNtFaj6sUMTsQcTmIQ+dVoNCbCzogLotcjpKptf0JxGEFwaopJbVeLoZACDOtTgCGu7p+mzbFK5+51JqeqPFNbnIlsGcaxD9UGYVXn/ZQ3qhwCjihp2yXePzDxig7lyfuOrPV7isMMAhKC4EJZDEnPI9iyXWKLXBmzblnq7s1RF+5TbR0MjJf760MA/l8x8gDOle/+mH1ZnXjfIOjxg0W7FX/eBxwg9/8SsQH2qflyAdXHwIDkjzHu9a2YoN51wLJm5U4bbBA0ZQTB5ZgXgG2UsVYYGA2NC4ZnRW/8KsaVGfW+1c+K96koxmw3Jts2yOg/RO3WNm8qiKbJ7l/CRF4tdYYYpO/BuHHnYQJVR2BiFHGeeTG1mEwbJkjX1eBAOEHGXHKkd2dEnYnC/5Ksi1752DlfInM5S8r/QqTD41KnXBQQXJkBBP0xJcGvM4LgEQEBmNSGmZhAVNK8oIIs6C6RMO0R5SdgorRfwCT2fSWk3AeAf8nHRlfbCfbXXwGsksmYLvc6ZDyFAPWgDfgb8Cf5+4vUIr31aLqMf7aM/+gRIBHmKf6cqni2NmLTu1n4/pJ8X6/WnS3/ZUzwz9IaTBynD9npbqUWWEhD82USS4MoCR6hFjm0InCRoPyolAZ0t+ze0yIMs20y9icxsZCHYvYR9crKLZjI8jYHHO0RoP4P8JhSjwqiMlFnI3jeGf/rIwAIWwP4Y9+JG/WsLWoO20PUp9OAv6p7a0WaVJtF1GahRaK/rQuQCE2CvDxBgNopoX6UNMgQs0G8XuCJCL07KrLsTt58Ry/dTXAU9yZM5LQkkuBuUXnOEfFfCOHFckxuzVTgo2I8TqozrrmkiywPJ90C3CP8mSM6/Ufk+q4Q/iwFfqUcL6+ErI1e4JOyKXxIeHEPcHZRRO29GQY+Xho+XkDQqhbEGkxoPG8QHCi/P6TUpaQgmED99As3shxGO8SWWCELdnXEYtO5MsuoBdRm1OHHK7JTgsk9ejPG8+YZWR5qj1Ef8IB4zVCSO4ieFYfCcvm8GNF2r0gGOz+zgemWQfMFeWmpBXO+4ARqiVVPJARBMQEIOmQRbc4AgqUxF0ecyGySFAtXXNsUiykRqo5tb5V8zyL+iw/yjCwPByB2xuCPTrFocurPFIm9nVpeVI84XP5vlxSVzjw3BzB0AadgMvySSoLdmIxDDQJ3Qe2fMwjyXBzVFIvOujbts9WjFfI9VUQ7jO7jqf2OVIzD/0qA1+0g4a/O5/q5av/kZseAnCt/X5Zy4GOA36aoVxEV61wRbRsCFmqekgAab4ccW2eSETtsEzCZWvzh3ULjImw5YvAOBh5+2oE5OHUMMLkY4E3JKhnSiMBxGBfuY+LZcEGQhySYqEDQiDQmYqIryvh7bBDH0GibQ9XROFpTjLEaoG7hGtPFgEoWDEO1aN4U4+ZOBp7C0iCYmwMIOhtcjWiKOb6Hcuqv11lk2kGgd9Ck/+Bxp/NMQddJ2qyErNU0z9kewHOA/uYQBBWo5WRcOoiTv008IK+HINiC4OGUIDhT1KHOBtzxCrL770lYbx0mFjEpY/+bA9QOC0Sb3/NWQolWpnZG2VX3tJ9/8xDYN3audYT/cKeMTX1/qxjRiAXD0kEEwceUKkSAYWwlwcaUIJg0hJKt5HzSqCL1dj0bA1iZgwG6Xt3rUOP5HLX8nhcCdvMw2quASsAmeoG67o7RnuXFHjWvhQi+tFJLYtRSbRO1N6PMFO2gjHFX239Cs75YZ5IsGO4bJBBsDPHe5CEJJhGdn5IHWbF9FOYFY/bzhjC6HGOi9Znj5phSa3kGPV8b3tY9fSom8LYG47HTnhWIPgzj8mK1Ats8jCfxKQYezl8RY6zNCdSom+RZXhaJtEoBpEItXtQmG8BTDDxj3tkcg2kFhexLclg82xOAII0kOCMjCAoBKkMYaZenq6q0h6gIJTXRFaUuTMa4+spOOT0mu8C6hI8HBEifcSF6ufuMZZnPp+XeVKfMvQzM7ykEtDk2oF17IvBncm+6U+Za3ukaL4Vca5vlIOFpT0C58Y4X7TjHGL5dpMGJoirrFJgHgeVxzprmCYYtMsieQQTBIcowTvOirg0yWU3U8lKCcqh2Y3KESo4It/qwVj1WUgucPe1M0nWYNJddznhXi7pRVnpuVe2SF2Ki+aud9n6ISdArA6+F7Lz279+J3jyXWspBj+zYq5yy9vtVxZ9uhz+2zAOyO1+s9PJNcr9LlbVjXqNUq7XO89yAOXfsGu6rpY23A4DzRoDBfDImLHCKbDjbMUHfZZDsBV92YS3NAIadojK8GLBQ2xmYap10XDMx0cfBVoc8jUJK4pLSkiGtzWBTiu3BmtYGBYE1vup5NZpUWfcT1mbQM7SGqDFhdXS9sPutCZ+3oOoWcuJPknbT8idoDgoR82Xd1APc1UkkQp6SoV8kwzrR1y7KSR3y5CkVpXkfTR42wxjMG98+gckqzCIJPAg8Zaa0/x/BLsZHMaezpqao3yJG1iPKqPM2gaeGtxEGw2bYRf3XmHgQeGpoIOQFBg8CTyMeCFnBsMeDwNNoAcJgSwYPAk8jBghZwFD0IPA0moCQBgxRb6vzIPA0YoHgguEndcru8yDwNFqBoMFwSQwwtHgQeBqtQEgKBg8CT6MWCC4Y7g/4XbtPWz0IPI1WIGgwXIQ5BOGSzSosexB4Gs1A0GC4IAAM1kbwIPA06oEQBoYK5mjfDMwryz0IPA0LNQ9xfxoMVi06D3NAf7GfDk/vBomgwYCAwZ5fXeanwtNw0v8ATX8ULDy9K9AAAAAASUVORK5CYII=" alt="FernFutures" /></div>
+  </div>
+
+  <div class="pick">
+    <div class="seg-label">Compradores</div>
+    <div class="seg" id="seg"><div class="thumb" id="thumb"></div></div>
+    <div class="seg-label" style="margin-top:24px">País</div>
+    <div class="seg small" id="segC"><div class="thumb" id="thumbC"></div></div>
+  </div>
+
+  <header>
+    <div class="ev">HospavIA · Panamá</div>
+    <h1>Transformación Hospitalaria en América Latina<em>de la Infraestructura a la Inteligencia</em></h1>
+    <p>Los tres pilares del evento y sus iniciativas estratégicas</p>
+  </header>
+
+  <svg class="branch" id="branch" viewBox="0 0 900 76" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M450 0 V22 Q450 34 438 34 H162 Q150 34 150 46 V64" />
+    <path d="M450 0 V64" />
+    <path d="M450 0 V22 Q450 34 462 34 H738 Q750 34 750 46 V64" />
+    <path class="head" d="M144 58 L150 66 L156 58" />
+    <path class="head" d="M444 58 L450 66 L456 58" />
+    <path class="head" d="M744 58 L750 66 L756 58" />
+  </svg>
+  <div class="markbar" id="markbar"></div>
+  <div class="cols" id="cols"></div>
+  <div class="backrow" id="backrow"></div>
+
+  <footer id="foot">Under each strategic initiative are the solution buckets that serve it — categories a
+    supplier can sell — ordered by registered demand. Corporate activity such as insurance products,
+    payor mix, M&A and accreditation is excluded, since no supplier sells it. Private hospitals in Mexico is built from 165 normalized initiatives across ten groups.
+    Other sectors and countries are not yet mapped: Brazil holds 150 private-hospital initiatives,
+    Chile 72, Argentina 65 and Colombia 51.</footer>
+</div>
+
+<script>
+const DETAIL = {"B01": {"name": "Imagen y radiología", "what": "TC, RM, ultrasonido, rayos X, mastografía, medicina nuclear", "n": 60, "buyers": [{"co": "Grupo Ángeles Servicios de Salud", "n": 3, "ex": ["developed a new hospital in Querétaro to provide quality hospital services", "20 billion peso investment in projects such as Hospital Angeles Andares and the Polanco and Arboledas hospital", "Ten expansion projects underway at various hospitals adding 695,000 square metres"], "divs": [{"div": "Ingeniería biomédica y compras", "codes": ["B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "B19"], "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}, {"div": "Imagen diagnóstica y medicina nuclear", "codes": ["B01", "B09", "B13"], "people": [{"n": "Rafael Ochoa Auerbach", "r": "Corporate director of diagnostic services", "l": "C-Suite"}], "groups": [{"f": "Alta dirección", "people": [{"n": "Rafael Ochoa Auerbach", "r": "Corporate director of diagnostic services", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "Christus Muguerza", "n": 12, "ex": ["Introduced Feme Elle program for comprehensive women's health care", "Investment of around 1.2 billion pesos in clinical software and AI algorithms", "invest 2 billion pesos to build a hospital in Los Cabos"], "divs": []}, {"co": "AUNA", "n": 10, "ex": ["18-year contract to provide 3.2 million services a year in Peru", "inaugurating a new OncoCenter at Doctors Hospital", "expansion of our Lima network"], "divs": []}, {"co": "Hospitales MAC", "n": 10, "ex": ["open its 23rd hospital in Interlomas", "Planning to open at least three new hospitals within the next six months", "open eight new hospitals in 2024, bringing the total to 30 by the end of the year"], "divs": []}, {"co": "Salud Digna", "n": 9, "ex": ["open at least 40 more clinics", "open 35 units throughout 2024", "open 50 branches in the following year"], "divs": []}, {"co": "TecSalud", "n": 6, "ex": ["Built a whole initiative Health4life dedicated to preventive medicine", "opening of its third Primary Care Clinic in Valle Poniente", "Opening of a new TecSalud clinic on Vía Cordillera"], "divs": []}, {"co": "Medica Sur", "n": 5, "ex": ["MÉDICA implemented the EDEN RIS/PACS platform in Imaging and other departments", "$48.3 million invested in medical equipment for surgical areas.", "invested P$200 million in digital transformation, equipment and the refurbishment of its facilities"], "divs": []}, {"co": "Grupo Hospitalario Dalinde / San Ángel Inn", "n": 3, "ex": ["Implementation of 360° Comprehensive Cancer Care Model (MAIO)", "Opening of new facility in Satélite", "Creation of a new Cardiovascular Unit to enhance prevention and care"], "divs": []}, {"co": "Centro Medico ABC", "n": 1, "ex": ["Opening of the new Arrhythmia Clinic at ABC Medical Center"], "divs": []}, {"co": "Star Medica", "n": 1, "ex": ["building a new Star Médica hospital in León"], "divs": []}], "sellers": [{"co": "GE HealthCare", "divs": [{"div": "Imaging", "codes": ["B01", "B09", "B11", "B13"], "people": [{"n": "Alejandro Valenzuela", "r": "Global Director, Product Marketing", "l": "C-Suite"}], "desc": "CT, MR, molecular imaging, X-ray and women's health. The largest single division across the six accounts at $9.2bn.", "groups": [{"f": "Alta dirección", "people": [{"n": "Alejandro Valenzuela", "r": "Global Director, Product Marketing", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}, {"div": "Advanced Visualization Solutions", "codes": ["B01", "B06", "B03"], "people": [{"n": "Ana Cecilia García Oliva", "r": "Senior PM — Interventional", "l": "Director"}], "desc": "Specialised ultrasound, cardiovascular and interventional solutions, and surgical imaging.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "Ana Cecilia García Oliva", "r": "Senior PM — Interventional", "l": "Director"}]}]}]}, {"co": "Mindray", "divs": [{"div": "Medical Imaging System", "codes": ["B01", "B11"], "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}], "desc": "Ultrasound and radiology systems.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}]}, {"f": "Producto", "people": []}]}]}], "tiers": {"Leaders": [{"co": "GE HealthCare", "anchor": true}, {"co": "Mindray", "anchor": true}, {"co": "Siemens Healthineers", "anchor": false}, {"co": "Philips", "anchor": false}, {"co": "Johnson & Johnson", "anchor": false}, {"co": "Boston Scientific", "anchor": false}, {"co": "Abbott", "anchor": false}, {"co": "Canon Medical", "anchor": false}, {"co": "Fujifilm", "anchor": false}, {"co": "Baxter", "anchor": false}, {"co": "B. Braun", "anchor": false}], "Specialists": [{"co": "Zimmer Biomet", "anchor": false}, {"co": "United Imaging", "anchor": false}, {"co": "Fresenius", "anchor": false}], "Startups": [{"co": "Midjourney Medical", "anchor": false}, {"co": "Spectrum Dynamics", "anchor": false}, {"co": "Clivi", "anchor": false}, {"co": "Unima", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": ["Grupo Ángeles Servicios de Salud", "Christus Muguerza", "AUNA", "Hospitales MAC", "Salud Digna", "TecSalud", "Medica Sur", "Grupo Hospitalario Dalinde / San Ángel Inn", "Centro Medico ABC", "Star Medica"]}, {"s": "Clínicas", "cos": []}]}, "B02": {"name": "Laboratorio e IVD", "what": "Analizadores, reactivos, automatización de laboratorio, patología, genómica", "n": 46, "buyers": [{"co": "Grupo Ángeles Servicios de Salud", "n": 3, "ex": ["Implement robotic GLP automation for Angeles Central Laboratory", "developed a new hospital in Querétaro to provide quality hospital services", "Ten expansion projects underway at various hospitals adding 695,000 square metres"], "divs": [{"div": "Ingeniería biomédica y compras", "codes": ["B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "B19"], "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "Hospitales MAC", "n": 10, "ex": ["open its 23rd hospital in Interlomas", "Planning to open at least three new hospitals within the next six months", "open eight new hospitals in 2024, bringing the total to 30 by the end of the year"], "divs": []}, {"co": "Salud Digna", "n": 7, "ex": ["expand its range of services to enter the biopsies and outpatient procedures segment", "launch of its biopsy unit as part of its project to offer a comprehensive diagnostic programme", "open at least 40 more clinics"], "divs": []}, {"co": "AUNA", "n": 6, "ex": ["18-year contract to provide 3.2 million services a year in Peru", "expansion of our Lima network", "Opened Centre of Excellence in Oncology at Doctors Hospital Auna"], "divs": []}, {"co": "Medica Sur", "n": 6, "ex": ["$46.7 million on other investment projects in safety equipment and modernisation of the laboratory.", "Médica Sur's Blood Bank service has been accredited by the Mexican Accreditation Body", "Médica Sur laboratory has been accredited by the College of American Pathologists"], "divs": []}, {"co": "TecSalud", "n": 6, "ex": ["Built a whole initiative Health4life dedicated to preventive medicine", "opening of its third Primary Care Clinic in Valle Poniente", "Opening of a new TecSalud clinic on Vía Cordillera"], "divs": []}, {"co": "Christus Muguerza", "n": 5, "ex": ["invest 2 billion pesos to build a hospital in Los Cabos", "opened its new Medical Centre in a historic building", "Building a hospital at the University of Monterrey (UDEM)"], "divs": []}, {"co": "Grupo Hospitalario Dalinde / San Ángel Inn", "n": 2, "ex": ["Implementation of 360° Comprehensive Cancer Care Model (MAIO)", "Opening of new facility in Satélite"], "divs": []}, {"co": "Star Medica", "n": 1, "ex": ["building a new Star Médica hospital in León"], "divs": []}], "sellers": [{"co": "Mindray", "divs": [{"div": "In-vitro Diagnostics", "codes": ["B02", "B11", "B14"], "people": [{"n": "Oscar O.", "r": "Sr Regional PLM — IVD Lab Automation LATAM", "l": "Director"}, {"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}], "desc": "Laboratory analysers and reagents — haematology, biochemistry, chemiluminescence immunoassay and coagulation. Mindray's largest line at 37% of revenue.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}]}, {"f": "Producto", "people": [{"n": "Oscar O.", "r": "Sr Regional PLM — IVD Lab Automation LATAM", "l": "Director"}]}]}]}], "tiers": {"Leaders": [{"co": "Mindray", "anchor": true}, {"co": "GE HealthCare", "anchor": false}, {"co": "Siemens Healthineers", "anchor": false}, {"co": "Philips", "anchor": false}, {"co": "Johnson & Johnson", "anchor": false}, {"co": "Boston Scientific", "anchor": false}, {"co": "Abbott", "anchor": false}, {"co": "Canon Medical", "anchor": false}, {"co": "Fujifilm", "anchor": false}, {"co": "Baxter", "anchor": false}, {"co": "B. Braun", "anchor": false}], "Specialists": [{"co": "Zimmer Biomet", "anchor": false}, {"co": "United Imaging", "anchor": false}, {"co": "Fresenius", "anchor": false}], "Startups": [{"co": "Midjourney Medical", "anchor": false}, {"co": "Spectrum Dynamics", "anchor": false}, {"co": "Clivi", "anchor": false}, {"co": "Unima", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": ["Grupo Ángeles Servicios de Salud", "Hospitales MAC", "Salud Digna", "AUNA", "Medica Sur", "TecSalud", "Christus Muguerza", "Grupo Hospitalario Dalinde / San Ángel Inn", "Star Medica"]}, {"s": "Clínicas", "cos": []}]}, "B03": {"name": "Quirófano e instrumental", "what": "Mesas, lámparas, endoscopia, esterilización, integración de quirófano", "n": 48, "buyers": [{"co": "Grupo Ángeles Servicios de Salud", "n": 4, "ex": ["developed a new hospital in Querétaro to provide quality hospital services", "20 billion peso investment in projects such as Hospital Angeles Andares and the Polanco and Arboledas hospital", "Ten expansion projects underway at various hospitals adding 695,000 square metres"], "divs": [{"div": "Red hospitalaria · 27 hospitales", "codes": ["B18", "B03", "B05", "B10", "B19"], "people": [{"n": "Gerardo Campillo", "r": "Director of operations", "l": "C-Suite"}, {"n": "Camilo Pérez Aldir", "r": "Regional director of operations", "l": "Director"}, {"n": "Margarita Name Saucedo", "r": "Operations Director", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": [{"n": "Gerardo Campillo", "r": "Director of operations", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Camilo Pérez Aldir", "r": "Regional director of operations", "l": "Director"}, {"n": "Margarita Name Saucedo", "r": "Operations Director", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}, {"div": "Ingeniería biomédica y compras", "codes": ["B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "B19"], "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "Hospitales MAC", "n": 11, "ex": ["open its 23rd hospital in Interlomas", "Planning to open at least three new hospitals within the next six months", "open eight new hospitals in 2024, bringing the total to 30 by the end of the year"], "divs": []}, {"co": "AUNA", "n": 9, "ex": ["Increase oncology and cardiology services in Mexico", "inaugurating a new OncoCenter at Doctors Hospital", "Opened Centre of Excellence in Oncology at Doctors Hospital Auna"], "divs": []}, {"co": "Christus Muguerza", "n": 6, "ex": ["invest 2 billion pesos to build a hospital in Los Cabos", "Building a hospital at the University of Monterrey (UDEM)", "Complete Comprehensive Oncology Centre in Puebla"], "divs": []}, {"co": "Medica Sur", "n": 5, "ex": ["Implement a policy for the reprocessing of reusable devices", "developing a programme to ensure that patients are fully prepared for their surgical procedures", "$48.3 million invested in medical equipment for surgical areas."], "divs": []}, {"co": "Grupo Hospitalario Dalinde / San Ángel Inn", "n": 4, "ex": ["opening radiotherapy and outpatient infusion therapies", "Opening of new facility in Satélite", "Creation of a new Cardiovascular Unit to enhance prevention and care"], "divs": []}, {"co": "Salud Digna", "n": 4, "ex": ["Working on a pilot programme to venture into outpatient surgery", "expand its range of services to enter the biopsies and outpatient procedures segment", "launch of its biopsy unit as part of its project to offer a comprehensive diagnostic programme"], "divs": []}, {"co": "TecSalud", "n": 3, "ex": ["build the new Health Sciences Campus", "Increasing capacity of Zambrano Hellion Hospital by 50%.", "Performed Mexico's first robotic mitral valve repair surgery"], "divs": []}, {"co": "Centro Medico ABC", "n": 1, "ex": ["Opening of the new Arrhythmia Clinic at ABC Medical Center"], "divs": []}, {"co": "Star Medica", "n": 1, "ex": ["building a new Star Médica hospital in León"], "divs": []}], "sellers": [{"co": "GE HealthCare", "divs": [{"div": "Advanced Visualization Solutions", "codes": ["B01", "B06", "B03"], "people": [{"n": "Ana Cecilia García Oliva", "r": "Senior PM — Interventional", "l": "Director"}], "desc": "Specialised ultrasound, cardiovascular and interventional solutions, and surgical imaging.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "Ana Cecilia García Oliva", "r": "Senior PM — Interventional", "l": "Director"}]}]}]}, {"co": "Dräger", "divs": [{"div": "Medical", "codes": ["B05", "B03", "B15", "B19"], "people": [{"n": "Pablo Bufano", "r": "Managing Director, Mexico", "l": "C-Suite"}, {"n": "Javier Alejandro López", "r": "Regional PM — Anaesthesia, Monitoring & WPI", "l": "Director"}, {"n": "América Gastélum", "r": "Commercial Director", "l": "Director"}, {"n": "Blanca López Chávez", "r": "LATAM Strategic Product Manager", "l": "Gerente"}], "desc": "Anaesthesia, ventilation, patient monitoring, neonatal care, and Workplace Infrastructure — ceiling supply units, surgical lights and medical gas management. One division, entirely acute care.", "groups": [{"f": "Alta dirección", "people": [{"n": "Pablo Bufano", "r": "Managing Director, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "América Gastélum", "r": "Commercial Director", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "Javier Alejandro López", "r": "Regional PM — Anaesthesia, Monitoring & WPI", "l": "Director"}, {"n": "Blanca López Chávez", "r": "LATAM Strategic Product Manager", "l": "Gerente"}]}]}]}, {"co": "Mindray", "divs": [{"div": "Emerging Business", "codes": ["B03", "B06"], "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}], "desc": "Minimally invasive surgery, minimally invasive intervention and animal care — the newest line, created in the 2025 scope revision.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}]}, {"f": "Producto", "people": []}]}]}, {"co": "B. Braun", "divs": [{"div": "Aesculap", "codes": ["B03", "B04", "B07", "B22"], "people": [{"n": "Marcus Cardinal", "r": "Sales Director", "l": "Director"}, {"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}, {"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}], "desc": "Surgical instruments, sutures, hip and knee implants, spine and neurosurgery, OR integration and robotic visualisation. B. Braun's surgical division, founded 1867.", "groups": [{"f": "Alta dirección", "people": [{"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Marcus Cardinal", "r": "Sales Director", "l": "Director"}]}, {"f": "Marketing", "people": [{"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}]}, {"co": "Stryker", "divs": [{"div": "MedSurg & Neurotechnology", "codes": ["B03", "B04", "B05", "B06", "B17"], "people": [{"n": "Aranza Boizo", "r": "Product Manager", "l": "Gerente"}, {"n": "Laura Del Río", "r": "General Manager, Mexico", "l": "C-Suite"}], "desc": "Instruments, endoscopy, medical equipment including beds and emergency, vascular, neuro cranial, and Vocera clinical communications. 62% of Stryker.", "groups": [{"f": "Alta dirección", "people": [{"n": "Laura Del Río", "r": "General Manager, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "Aranza Boizo", "r": "Product Manager", "l": "Gerente"}]}]}]}, {"co": "Medtronic", "divs": [{"div": "Medical Surgical Portfolio", "codes": ["B03", "B04", "B11", "B17"], "people": [{"n": "Angie Leycegui", "r": "Sr Sales Director — Medical Surgical BU", "l": "Director"}, {"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}, {"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}], "desc": "Surgical and endoscopy — including Hugo robotics and GI Genius — plus acute care and monitoring.", "groups": [{"f": "Alta dirección", "people": [{"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Angie Leycegui", "r": "Sr Sales Director — Medical Surgical BU", "l": "Director"}]}, {"f": "Marketing", "people": [{"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}]}], "tiers": {"Leaders": [{"co": "GE HealthCare", "anchor": true}, {"co": "Mindray", "anchor": true}, {"co": "B. Braun", "anchor": true}, {"co": "Stryker", "anchor": true}, {"co": "Medtronic", "anchor": true}, {"co": "Siemens Healthineers", "anchor": false}, {"co": "Philips", "anchor": false}, {"co": "Johnson & Johnson", "anchor": false}, {"co": "Boston Scientific", "anchor": false}, {"co": "Abbott", "anchor": false}, {"co": "Canon Medical", "anchor": false}, {"co": "Fujifilm", "anchor": false}, {"co": "Baxter", "anchor": false}], "Specialists": [{"co": "Dräger", "anchor": true}, {"co": "Zimmer Biomet", "anchor": false}, {"co": "United Imaging", "anchor": false}, {"co": "Fresenius", "anchor": false}], "Startups": [{"co": "Midjourney Medical", "anchor": false}, {"co": "Spectrum Dynamics", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": ["Grupo Ángeles Servicios de Salud", "Hospitales MAC", "AUNA", "Christus Muguerza", "Medica Sur", "Grupo Hospitalario Dalinde / San Ángel Inn", "Salud Digna", "TecSalud", "Centro Medico ABC", "Star Medica"]}, {"s": "Clínicas", "cos": []}]}, "B04": {"name": "Robótica quirúrgica y navegación", "what": "Sistemas robóticos, navegación, planeación quirúrgica", "n": 5, "buyers": [{"co": "Grupo Ángeles Servicios de Salud", "n": 1, "ex": ["Robotic surgery program at Hospital Angeles Health System celebrates 10 years of providing surgical interventi"], "divs": [{"div": "Ingeniería biomédica y compras", "codes": ["B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "B19"], "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "Grupo Hospitalario Dalinde / San Ángel Inn", "n": 2, "ex": ["Opening of new facility in Satélite", "acquisition of the Versius robotic surgery system"], "divs": []}, {"co": "Medica Sur", "n": 1, "ex": ["$48.3 million invested in medical equipment for surgical areas."], "divs": []}, {"co": "TecSalud", "n": 1, "ex": ["Performed Mexico's first robotic mitral valve repair surgery"], "divs": []}], "sellers": [{"co": "B. Braun", "divs": [{"div": "Aesculap", "codes": ["B03", "B04", "B07", "B22"], "people": [{"n": "Marcus Cardinal", "r": "Sales Director", "l": "Director"}, {"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}, {"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}], "desc": "Surgical instruments, sutures, hip and knee implants, spine and neurosurgery, OR integration and robotic visualisation. B. Braun's surgical division, founded 1867.", "groups": [{"f": "Alta dirección", "people": [{"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Marcus Cardinal", "r": "Sales Director", "l": "Director"}]}, {"f": "Marketing", "people": [{"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}]}, {"co": "Stryker", "divs": [{"div": "MedSurg & Neurotechnology", "codes": ["B03", "B04", "B05", "B06", "B17"], "people": [{"n": "Aranza Boizo", "r": "Product Manager", "l": "Gerente"}, {"n": "Laura Del Río", "r": "General Manager, Mexico", "l": "C-Suite"}], "desc": "Instruments, endoscopy, medical equipment including beds and emergency, vascular, neuro cranial, and Vocera clinical communications. 62% of Stryker.", "groups": [{"f": "Alta dirección", "people": [{"n": "Laura Del Río", "r": "General Manager, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "Aranza Boizo", "r": "Product Manager", "l": "Gerente"}]}]}, {"div": "Orthopaedics", "codes": ["B07", "B04"], "people": [{"n": "Juan Carlos Gutiérrez", "r": "Sr BU Manager — Orthopaedics", "l": "Director"}, {"n": "Laura Del Río", "r": "General Manager, Mexico", "l": "C-Suite"}], "desc": "Knees, hips, trauma and extremities, spinal implants, and Mako robotic-arm assisted surgery.", "groups": [{"f": "Alta dirección", "people": [{"n": "Laura Del Río", "r": "General Manager, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Juan Carlos Gutiérrez", "r": "Sr BU Manager — Orthopaedics", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "Medtronic", "divs": [{"div": "Neuroscience Portfolio", "codes": ["B07", "B04", "B11"], "people": [{"n": "Luis Eduardo Martínez Luengo", "r": "Country Regional Head — Neuroscience", "l": "Director"}, {"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}, {"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}], "desc": "Cranial and spinal technologies, specialty therapies and neuromodulation.", "groups": [{"f": "Alta dirección", "people": [{"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Luis Eduardo Martínez Luengo", "r": "Country Regional Head — Neuroscience", "l": "Director"}]}, {"f": "Marketing", "people": [{"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}, {"div": "Medical Surgical Portfolio", "codes": ["B03", "B04", "B11", "B17"], "people": [{"n": "Angie Leycegui", "r": "Sr Sales Director — Medical Surgical BU", "l": "Director"}, {"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}, {"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}], "desc": "Surgical and endoscopy — including Hugo robotics and GI Genius — plus acute care and monitoring.", "groups": [{"f": "Alta dirección", "people": [{"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Angie Leycegui", "r": "Sr Sales Director — Medical Surgical BU", "l": "Director"}]}, {"f": "Marketing", "people": [{"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}]}], "tiers": {"Leaders": [{"co": "B. Braun", "anchor": true}, {"co": "Stryker", "anchor": true}, {"co": "Medtronic", "anchor": true}, {"co": "GE HealthCare", "anchor": false}, {"co": "Siemens Healthineers", "anchor": false}, {"co": "Philips", "anchor": false}, {"co": "Johnson & Johnson", "anchor": false}, {"co": "Boston Scientific", "anchor": false}, {"co": "Abbott", "anchor": false}, {"co": "Mindray", "anchor": false}, {"co": "Canon Medical", "anchor": false}, {"co": "Fujifilm", "anchor": false}, {"co": "Baxter", "anchor": false}, {"co": "Roche", "anchor": false}, {"co": "MSD", "anchor": false}, {"co": "Novartis", "anchor": false}, {"co": "AstraZeneca", "anchor": false}, {"co": "Eli Lilly", "anchor": false}], "Specialists": [{"co": "Zimmer Biomet", "anchor": false}, {"co": "United Imaging", "anchor": false}, {"co": "Fresenius", "anchor": false}, {"co": "Sandoz", "anchor": false}, {"co": "Teva", "anchor": false}, {"co": "Mayo Clinic", "anchor": false}, {"co": "Houston Methodist", "anchor": false}, {"co": "Tec de Monterrey", "anchor": false}, {"co": "UDEM", "anchor": false}, {"co": "Fiocruz", "anchor": false}, {"co": "Alnylam", "anchor": false}, {"co": "Butantan", "anchor": false}], "Startups": [{"co": "Midjourney Medical", "anchor": false}, {"co": "Spectrum Dynamics", "anchor": false}, {"co": "FACT", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": ["Grupo Ángeles Servicios de Salud", "Grupo Hospitalario Dalinde / San Ángel Inn", "Medica Sur", "TecSalud"]}]}, "B05": {"name": "Monitoreo y soporte vital", "what": "Monitores, ventiladores, anestesia, UCI, neonatal, urgencias", "n": 34, "buyers": [{"co": "Grupo Ángeles Servicios de Salud", "n": 3, "ex": ["developed a new hospital in Querétaro to provide quality hospital services", "20 billion peso investment in projects such as Hospital Angeles Andares and the Polanco and Arboledas hospital", "Ten expansion projects underway at various hospitals adding 695,000 square metres"], "divs": [{"div": "Red hospitalaria · 27 hospitales", "codes": ["B18", "B03", "B05", "B10", "B19"], "people": [{"n": "Gerardo Campillo", "r": "Director of operations", "l": "C-Suite"}, {"n": "Camilo Pérez Aldir", "r": "Regional director of operations", "l": "Director"}, {"n": "Margarita Name Saucedo", "r": "Operations Director", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": [{"n": "Gerardo Campillo", "r": "Director of operations", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Camilo Pérez Aldir", "r": "Regional director of operations", "l": "Director"}, {"n": "Margarita Name Saucedo", "r": "Operations Director", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}, {"div": "Ingeniería biomédica y compras", "codes": ["B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "B19"], "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}, {"div": "Enfermería y atención domiciliaria", "codes": ["B05", "B10", "B17"], "people": [{"n": "Ma. del Pilar Maqueo Velasco", "r": "Corporate Director of nursing", "l": "C-Suite"}], "groups": [{"f": "Alta dirección", "people": [{"n": "Ma. del Pilar Maqueo Velasco", "r": "Corporate Director of nursing", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "Hospitales MAC", "n": 12, "ex": ["introduce MAC at Home service", "Exploring the 'liquid hospital' model combining inpatient services with home-based care", "open its 23rd hospital in Interlomas"], "divs": []}, {"co": "Christus Muguerza", "n": 6, "ex": ["Expanding ambulance service to Chihuahua, Saltillo, and Puebla", "invest 2 billion pesos to build a hospital in Los Cabos", "Building a hospital at the University of Monterrey (UDEM)"], "divs": []}, {"co": "AUNA", "n": 4, "ex": ["Chile continues implementing long-term plans for hospital construction and primary care centers", "Auna has initiated a series of improvements to technology and infrastructure at Oca Hospital Auna", "Increase capacity of beds, chemotherapy, radiotherapy and surgery rooms in Peru"], "divs": []}, {"co": "Grupo Hospitalario Dalinde / San Ángel Inn", "n": 2, "ex": ["Opening of new facility in Satélite", "Creation of a new Cardiovascular Unit to enhance prevention and care"], "divs": []}, {"co": "Medica Sur", "n": 2, "ex": ["$22.4 million invested in medical equipment and refurbishment of the gynaecology and obstetrics ward.", "invested P$200 million in digital transformation, equipment and the refurbishment of its facilities"], "divs": []}, {"co": "TecSalud", "n": 2, "ex": ["build the new Health Sciences Campus", "Increasing capacity of Zambrano Hellion Hospital by 50%."], "divs": []}, {"co": "Centro Medico ABC", "n": 1, "ex": ["Opening of the new Arrhythmia Clinic at ABC Medical Center"], "divs": []}, {"co": "Salud Digna", "n": 1, "ex": ["Working on a pilot programme to venture into outpatient surgery"], "divs": []}, {"co": "Star Medica", "n": 1, "ex": ["building a new Star Médica hospital in León"], "divs": []}], "sellers": [{"co": "GE HealthCare", "divs": [{"div": "Patient Care Solutions", "codes": ["B05", "B15", "B06"], "people": [{"n": "José Antonio León Chávez", "r": "Regional PM — Maternal Infant Care & Monitoring", "l": "Director"}, {"n": "Ana Covarrubias Ordaz", "r": "PM — Patient Care Solutions", "l": "Gerente"}], "desc": "Patient monitoring, diagnostic cardiology, maternal-infant care, anaesthesia and consumables.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "José Antonio León Chávez", "r": "Regional PM — Maternal Infant Care & Monitoring", "l": "Director"}, {"n": "Ana Covarrubias Ordaz", "r": "PM — Patient Care Solutions", "l": "Gerente"}]}]}]}, {"co": "Dräger", "divs": [{"div": "Medical", "codes": ["B05", "B03", "B15", "B19"], "people": [{"n": "Pablo Bufano", "r": "Managing Director, Mexico", "l": "C-Suite"}, {"n": "Javier Alejandro López", "r": "Regional PM — Anaesthesia, Monitoring & WPI", "l": "Director"}, {"n": "América Gastélum", "r": "Commercial Director", "l": "Director"}, {"n": "Blanca López Chávez", "r": "LATAM Strategic Product Manager", "l": "Gerente"}], "desc": "Anaesthesia, ventilation, patient monitoring, neonatal care, and Workplace Infrastructure — ceiling supply units, surgical lights and medical gas management. One division, entirely acute care.", "groups": [{"f": "Alta dirección", "people": [{"n": "Pablo Bufano", "r": "Managing Director, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "América Gastélum", "r": "Commercial Director", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "Javier Alejandro López", "r": "Regional PM — Anaesthesia, Monitoring & WPI", "l": "Director"}, {"n": "Blanca López Chávez", "r": "LATAM Strategic Product Manager", "l": "Gerente"}]}]}]}, {"co": "Mindray", "divs": [{"div": "Patient Monitoring & Life Support", "codes": ["B05", "B11", "B15", "B10"], "people": [{"n": "Arlette Sánchez", "r": "Product Manager", "l": "Gerente"}, {"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}], "desc": "Monitors, ventilators, anaesthesia machines, defibrillators, infusion pumps, operating tables, lights and supply units.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}]}, {"f": "Producto", "people": [{"n": "Arlette Sánchez", "r": "Product Manager", "l": "Gerente"}]}]}]}, {"co": "Stryker", "divs": [{"div": "MedSurg & Neurotechnology", "codes": ["B03", "B04", "B05", "B06", "B17"], "people": [{"n": "Aranza Boizo", "r": "Product Manager", "l": "Gerente"}, {"n": "Laura Del Río", "r": "General Manager, Mexico", "l": "C-Suite"}], "desc": "Instruments, endoscopy, medical equipment including beds and emergency, vascular, neuro cranial, and Vocera clinical communications. 62% of Stryker.", "groups": [{"f": "Alta dirección", "people": [{"n": "Laura Del Río", "r": "General Manager, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "Aranza Boizo", "r": "Product Manager", "l": "Gerente"}]}]}]}], "tiers": {"Leaders": [{"co": "GE HealthCare", "anchor": true}, {"co": "Mindray", "anchor": true}, {"co": "Stryker", "anchor": true}, {"co": "Siemens Healthineers", "anchor": false}, {"co": "Philips", "anchor": false}, {"co": "Johnson & Johnson", "anchor": false}, {"co": "Boston Scientific", "anchor": false}, {"co": "Abbott", "anchor": false}, {"co": "Canon Medical", "anchor": false}, {"co": "Fujifilm", "anchor": false}, {"co": "Baxter", "anchor": false}, {"co": "B. Braun", "anchor": false}], "Specialists": [{"co": "Dräger", "anchor": true}, {"co": "InterSystems", "anchor": false}, {"co": "Dedalus", "anchor": false}, {"co": "MV", "anchor": false}, {"co": "Pixeon", "anchor": false}, {"co": "Sectra", "anchor": false}, {"co": "regional HIS providers", "anchor": false}, {"co": "Zimmer Biomet", "anchor": false}, {"co": "United Imaging", "anchor": false}, {"co": "Fresenius", "anchor": false}], "Startups": [{"co": "Mecha Health", "anchor": false}, {"co": "Clivi", "anchor": false}, {"co": "Unima", "anchor": false}, {"co": "Midjourney Medical", "anchor": false}, {"co": "Spectrum Dynamics", "anchor": false}], "Enablers": [{"co": "Microsoft", "anchor": false}, {"co": "Oracle Health", "anchor": false}, {"co": "SAP", "anchor": false}, {"co": "IBM", "anchor": false}]}, "bsectors": [{"s": "Hospitales privados", "cos": ["Grupo Ángeles Servicios de Salud", "Hospitales MAC", "Christus Muguerza", "AUNA", "Grupo Hospitalario Dalinde / San Ángel Inn", "Medica Sur", "TecSalud", "Centro Medico ABC", "Salud Digna", "Star Medica"]}]}, "B06": {"name": "Cardiovascular e intervencionismo", "what": "Hemodinamia, cardiología estructural, electrofisiología, vascular", "n": 18, "buyers": [{"co": "Grupo Ángeles Servicios de Salud", "n": 1, "ex": ["Robotic surgery program at Hospital Angeles Health System celebrates 10 years of providing surgical interventi"], "divs": [{"div": "Ingeniería biomédica y compras", "codes": ["B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "B19"], "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "Hospitales MAC", "n": 11, "ex": ["open its 23rd hospital in Interlomas", "Planning to open at least three new hospitals within the next six months", "open eight new hospitals in 2024, bringing the total to 30 by the end of the year"], "divs": []}, {"co": "Christus Muguerza", "n": 2, "ex": ["invest 2 billion pesos to build a hospital in Los Cabos", "Break ground on a new hospital in Cabo San Lucas, Mexico"], "divs": []}, {"co": "AUNA", "n": 1, "ex": ["Increase oncology and cardiology services in Mexico"], "divs": []}, {"co": "Centro Medico ABC", "n": 1, "ex": ["Opening of the new Arrhythmia Clinic at ABC Medical Center"], "divs": []}, {"co": "Grupo Hospitalario Dalinde / San Ángel Inn", "n": 1, "ex": ["Creation of a new Cardiovascular Unit to enhance prevention and care"], "divs": []}, {"co": "TecSalud", "n": 1, "ex": ["Performed Mexico's first robotic mitral valve repair surgery"], "divs": []}], "sellers": [{"co": "GE HealthCare", "divs": [{"div": "Advanced Visualization Solutions", "codes": ["B01", "B06", "B03"], "people": [{"n": "Ana Cecilia García Oliva", "r": "Senior PM — Interventional", "l": "Director"}], "desc": "Specialised ultrasound, cardiovascular and interventional solutions, and surgical imaging.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "Ana Cecilia García Oliva", "r": "Senior PM — Interventional", "l": "Director"}]}]}, {"div": "Patient Care Solutions", "codes": ["B05", "B15", "B06"], "people": [{"n": "José Antonio León Chávez", "r": "Regional PM — Maternal Infant Care & Monitoring", "l": "Director"}, {"n": "Ana Covarrubias Ordaz", "r": "PM — Patient Care Solutions", "l": "Gerente"}], "desc": "Patient monitoring, diagnostic cardiology, maternal-infant care, anaesthesia and consumables.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "José Antonio León Chávez", "r": "Regional PM — Maternal Infant Care & Monitoring", "l": "Director"}, {"n": "Ana Covarrubias Ordaz", "r": "PM — Patient Care Solutions", "l": "Gerente"}]}]}]}, {"co": "Mindray", "divs": [{"div": "Emerging Business", "codes": ["B03", "B06"], "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}], "desc": "Minimally invasive surgery, minimally invasive intervention and animal care — the newest line, created in the 2025 scope revision.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}]}, {"f": "Producto", "people": []}]}]}, {"co": "Stryker", "divs": [{"div": "MedSurg & Neurotechnology", "codes": ["B03", "B04", "B05", "B06", "B17"], "people": [{"n": "Aranza Boizo", "r": "Product Manager", "l": "Gerente"}, {"n": "Laura Del Río", "r": "General Manager, Mexico", "l": "C-Suite"}], "desc": "Instruments, endoscopy, medical equipment including beds and emergency, vascular, neuro cranial, and Vocera clinical communications. 62% of Stryker.", "groups": [{"f": "Alta dirección", "people": [{"n": "Laura Del Río", "r": "General Manager, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "Aranza Boizo", "r": "Product Manager", "l": "Gerente"}]}]}]}, {"co": "Medtronic", "divs": [{"div": "Cardiovascular Portfolio", "codes": ["B06", "B11", "B15"], "people": [{"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}, {"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}], "desc": "Cardiac rhythm and heart failure, structural heart and aortic, coronary and peripheral vascular. Medtronic's largest portfolio at 37%.", "groups": [{"f": "Alta dirección", "people": [{"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}]}], "tiers": {"Leaders": [{"co": "GE HealthCare", "anchor": true}, {"co": "Mindray", "anchor": true}, {"co": "Stryker", "anchor": true}, {"co": "Medtronic", "anchor": true}, {"co": "Siemens Healthineers", "anchor": false}, {"co": "Philips", "anchor": false}, {"co": "Johnson & Johnson", "anchor": false}, {"co": "Boston Scientific", "anchor": false}, {"co": "Abbott", "anchor": false}, {"co": "Canon Medical", "anchor": false}, {"co": "Fujifilm", "anchor": false}, {"co": "Baxter", "anchor": false}, {"co": "B. Braun", "anchor": false}], "Specialists": [{"co": "Zimmer Biomet", "anchor": false}, {"co": "United Imaging", "anchor": false}, {"co": "Fresenius", "anchor": false}], "Startups": [{"co": "Midjourney Medical", "anchor": false}, {"co": "Spectrum Dynamics", "anchor": false}, {"co": "Clivi", "anchor": false}, {"co": "Unima", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": ["Grupo Ángeles Servicios de Salud", "Hospitales MAC", "Christus Muguerza", "AUNA", "Centro Medico ABC", "Grupo Hospitalario Dalinde / San Ángel Inn", "TecSalud"]}]}, "B07": {"name": "Ortopedia, columna y neuro", "what": "Implantes articulares, trauma, columna, neurocirugía", "n": 1, "buyers": [{"co": "Medica Sur", "n": 1, "ex": ["$48.3 million invested in medical equipment for surgical areas."], "divs": []}], "sellers": [{"co": "B. Braun", "divs": [{"div": "Aesculap", "codes": ["B03", "B04", "B07", "B22"], "people": [{"n": "Marcus Cardinal", "r": "Sales Director", "l": "Director"}, {"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}, {"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}], "desc": "Surgical instruments, sutures, hip and knee implants, spine and neurosurgery, OR integration and robotic visualisation. B. Braun's surgical division, founded 1867.", "groups": [{"f": "Alta dirección", "people": [{"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Marcus Cardinal", "r": "Sales Director", "l": "Director"}]}, {"f": "Marketing", "people": [{"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}]}, {"co": "Stryker", "divs": [{"div": "Orthopaedics", "codes": ["B07", "B04"], "people": [{"n": "Juan Carlos Gutiérrez", "r": "Sr BU Manager — Orthopaedics", "l": "Director"}, {"n": "Laura Del Río", "r": "General Manager, Mexico", "l": "C-Suite"}], "desc": "Knees, hips, trauma and extremities, spinal implants, and Mako robotic-arm assisted surgery.", "groups": [{"f": "Alta dirección", "people": [{"n": "Laura Del Río", "r": "General Manager, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Juan Carlos Gutiérrez", "r": "Sr BU Manager — Orthopaedics", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "Medtronic", "divs": [{"div": "Neuroscience Portfolio", "codes": ["B07", "B04", "B11"], "people": [{"n": "Luis Eduardo Martínez Luengo", "r": "Country Regional Head — Neuroscience", "l": "Director"}, {"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}, {"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}], "desc": "Cranial and spinal technologies, specialty therapies and neuromodulation.", "groups": [{"f": "Alta dirección", "people": [{"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Luis Eduardo Martínez Luengo", "r": "Country Regional Head — Neuroscience", "l": "Director"}]}, {"f": "Marketing", "people": [{"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}]}], "tiers": {"Leaders": [{"co": "B. Braun", "anchor": true}, {"co": "Stryker", "anchor": true}, {"co": "Medtronic", "anchor": true}, {"co": "GE HealthCare", "anchor": false}, {"co": "Siemens Healthineers", "anchor": false}, {"co": "Philips", "anchor": false}, {"co": "Johnson & Johnson", "anchor": false}, {"co": "Boston Scientific", "anchor": false}, {"co": "Abbott", "anchor": false}, {"co": "Mindray", "anchor": false}, {"co": "Canon Medical", "anchor": false}, {"co": "Fujifilm", "anchor": false}, {"co": "Baxter", "anchor": false}], "Specialists": [{"co": "Zimmer Biomet", "anchor": false}, {"co": "United Imaging", "anchor": false}, {"co": "Fresenius", "anchor": false}], "Startups": [{"co": "Midjourney Medical", "anchor": false}, {"co": "Spectrum Dynamics", "anchor": false}, {"co": "Clivi", "anchor": false}, {"co": "Unima", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": ["Medica Sur"]}]}, "B08": {"name": "Terapia renal y diálisis", "what": "Máquinas, dializadores, agua tratada, centros de terapia renal", "n": 0, "buyers": [], "sellers": [{"co": "B. Braun", "divs": [{"div": "Avitum", "codes": ["B08", "B10"], "people": [{"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}, {"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}], "desc": "Dialysis machines and consumables, extracorporeal blood treatment, and its own renal care centres — the only division across all six accounts that operates a service rather than only supplying one.", "groups": [{"f": "Alta dirección", "people": [{"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}]}], "tiers": {"Leaders": [{"co": "B. Braun", "anchor": true}, {"co": "GE HealthCare", "anchor": false}, {"co": "Siemens Healthineers", "anchor": false}, {"co": "Philips", "anchor": false}, {"co": "Johnson & Johnson", "anchor": false}, {"co": "Boston Scientific", "anchor": false}, {"co": "Abbott", "anchor": false}, {"co": "Mindray", "anchor": false}, {"co": "Canon Medical", "anchor": false}, {"co": "Fujifilm", "anchor": false}, {"co": "Baxter", "anchor": false}], "Specialists": [{"co": "Zimmer Biomet", "anchor": false}, {"co": "United Imaging", "anchor": false}, {"co": "Fresenius", "anchor": false}], "Startups": [{"co": "Midjourney Medical", "anchor": false}, {"co": "Spectrum Dynamics", "anchor": false}, {"co": "Clivi", "anchor": false}, {"co": "Unima", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": []}, {"s": "Clínicas", "cos": []}]}, "B09": {"name": "Oncología y radioterapia", "what": "Aceleradores, ciclotrón, radiofármacos, centros oncológicos", "n": 13, "buyers": [{"co": "AUNA", "n": 9, "ex": ["Increase oncology and cardiology services in Mexico", "closing agreements for OncoSalud network in four principal cities of Mexico", "inaugurating a new OncoCenter at Doctors Hospital"], "divs": []}, {"co": "Grupo Hospitalario Dalinde / San Ángel Inn", "n": 2, "ex": ["Implementation of 360° Comprehensive Cancer Care Model (MAIO)", "opening radiotherapy and outpatient infusion therapies"], "divs": []}, {"co": "Christus Muguerza", "n": 1, "ex": ["Complete Comprehensive Oncology Centre in Puebla"], "divs": []}, {"co": "Medica Sur", "n": 1, "ex": ["MÉDICA implemented the EDEN RIS/PACS platform in Imaging and other departments"], "divs": []}], "sellers": [{"co": "GE HealthCare", "divs": [{"div": "Imaging", "codes": ["B01", "B09", "B11", "B13"], "people": [{"n": "Alejandro Valenzuela", "r": "Global Director, Product Marketing", "l": "C-Suite"}], "desc": "CT, MR, molecular imaging, X-ray and women's health. The largest single division across the six accounts at $9.2bn.", "groups": [{"f": "Alta dirección", "people": [{"n": "Alejandro Valenzuela", "r": "Global Director, Product Marketing", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}, {"div": "Pharmaceutical Diagnostics", "codes": ["B09", "B23"], "people": [], "desc": "Contrast media and radiopharmaceuticals for radiology and nuclear medicine — a pharmaceutical business with its own commercial organisation, not a device one.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}], "tiers": {"Leaders": [{"co": "GE HealthCare", "anchor": true}, {"co": "Siemens Healthineers", "anchor": false}, {"co": "Philips", "anchor": false}, {"co": "Boston Scientific", "anchor": false}, {"co": "Mindray", "anchor": false}, {"co": "Canon Medical", "anchor": false}, {"co": "Baxter", "anchor": false}, {"co": "B. Braun", "anchor": false}, {"co": "Roche", "anchor": false}, {"co": "MSD", "anchor": false}, {"co": "Novartis", "anchor": false}, {"co": "AstraZeneca", "anchor": false}, {"co": "Eli Lilly", "anchor": false}], "Specialists": [{"co": "Fresenius", "anchor": false}, {"co": "United Imaging", "anchor": false}, {"co": "Sandoz", "anchor": false}, {"co": "Teva", "anchor": false}, {"co": "Mayo Clinic", "anchor": false}, {"co": "Houston Methodist", "anchor": false}, {"co": "Tec de Monterrey", "anchor": false}, {"co": "UDEM", "anchor": false}, {"co": "Fiocruz", "anchor": false}, {"co": "Alnylam", "anchor": false}, {"co": "Butantan", "anchor": false}], "Startups": [{"co": "Clivi", "anchor": false}, {"co": "Unima", "anchor": false}, {"co": "FACT", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": ["AUNA", "Grupo Hospitalario Dalinde / San Ángel Inn", "Christus Muguerza", "Medica Sur"]}, {"s": "Clínicas", "cos": []}]}, "B10": {"name": "Consumibles, infusión y suministro", "what": "Infusión, catéteres, suturas, insumos, ambulancias, reprocesamiento", "n": 40, "buyers": [{"co": "Grupo Ángeles Servicios de Salud", "n": 3, "ex": ["developed a new hospital in Querétaro to provide quality hospital services", "20 billion peso investment in projects such as Hospital Angeles Andares and the Polanco and Arboledas hospital", "Ten expansion projects underway at various hospitals adding 695,000 square metres"], "divs": [{"div": "Red hospitalaria · 27 hospitales", "codes": ["B18", "B03", "B05", "B10", "B19"], "people": [{"n": "Gerardo Campillo", "r": "Director of operations", "l": "C-Suite"}, {"n": "Camilo Pérez Aldir", "r": "Regional director of operations", "l": "Director"}, {"n": "Margarita Name Saucedo", "r": "Operations Director", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": [{"n": "Gerardo Campillo", "r": "Director of operations", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Camilo Pérez Aldir", "r": "Regional director of operations", "l": "Director"}, {"n": "Margarita Name Saucedo", "r": "Operations Director", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}, {"div": "Ingeniería biomédica y compras", "codes": ["B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "B19"], "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}, {"div": "Enfermería y atención domiciliaria", "codes": ["B05", "B10", "B17"], "people": [{"n": "Ma. del Pilar Maqueo Velasco", "r": "Corporate Director of nursing", "l": "C-Suite"}], "groups": [{"f": "Alta dirección", "people": [{"n": "Ma. del Pilar Maqueo Velasco", "r": "Corporate Director of nursing", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "Hospitales MAC", "n": 11, "ex": ["introduce MAC at Home service", "open its 23rd hospital in Interlomas", "Planning to open at least three new hospitals within the next six months"], "divs": []}, {"co": "Salud Digna", "n": 8, "ex": ["Working on a pilot programme to venture into outpatient surgery", "expand its range of services to enter the biopsies and outpatient procedures segment", "perform surgical procedures for cataracts, pterygium and other conditions"], "divs": []}, {"co": "Christus Muguerza", "n": 5, "ex": ["Expanding ambulance service to Chihuahua, Saltillo, and Puebla", "invest 2 billion pesos to build a hospital in Los Cabos", "Building a hospital at the University of Monterrey (UDEM)"], "divs": []}, {"co": "AUNA", "n": 4, "ex": ["reduced the number of legacy suppliers in Mexico to implement AunaWay", "Chile continues implementing long-term plans for hospital construction and primary care centers", "Increase capacity of beds, chemotherapy, radiotherapy and surgery rooms in Peru"], "divs": []}, {"co": "Grupo Hospitalario Dalinde / San Ángel Inn", "n": 3, "ex": ["Implementation of 360° Comprehensive Cancer Care Model (MAIO)", "opening radiotherapy and outpatient infusion therapies", "Opening of new facility in Satélite"], "divs": []}, {"co": "TecSalud", "n": 3, "ex": ["opening of its third Primary Care Clinic in Valle Poniente", "Opening of a new TecSalud clinic on Vía Cordillera", "Increasing capacity of Zambrano Hellion Hospital by 50%."], "divs": []}, {"co": "Medica Sur", "n": 2, "ex": ["Implement a policy for the reprocessing of reusable devices", "provide preventive and primary healthcare services"], "divs": []}, {"co": "Star Medica", "n": 1, "ex": ["building a new Star Médica hospital in León"], "divs": []}], "sellers": [{"co": "Mindray", "divs": [{"div": "Patient Monitoring & Life Support", "codes": ["B05", "B11", "B15", "B10"], "people": [{"n": "Arlette Sánchez", "r": "Product Manager", "l": "Gerente"}, {"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}], "desc": "Monitors, ventilators, anaesthesia machines, defibrillators, infusion pumps, operating tables, lights and supply units.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}]}, {"f": "Producto", "people": [{"n": "Arlette Sánchez", "r": "Product Manager", "l": "Gerente"}]}]}]}, {"co": "B. Braun", "divs": [{"div": "Hospital Care", "codes": ["B10", "B15"], "people": [{"n": "Adriana Ortega", "r": "National Sales Manager", "l": "Director"}, {"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}, {"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}], "desc": "Infusion therapy and infusion management, IV solutions, nutrition therapy, pain therapy, catheters and sets. 54% of the group.", "groups": [{"f": "Alta dirección", "people": [{"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Adriana Ortega", "r": "National Sales Manager", "l": "Director"}]}, {"f": "Marketing", "people": [{"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}, {"div": "Avitum", "codes": ["B08", "B10"], "people": [{"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}, {"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}], "desc": "Dialysis machines and consumables, extracorporeal blood treatment, and its own renal care centres — the only division across all six accounts that operates a service rather than only supplying one.", "groups": [{"f": "Alta dirección", "people": [{"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}]}], "tiers": {"Leaders": [{"co": "Mindray", "anchor": true}, {"co": "B. Braun", "anchor": true}, {"co": "GE HealthCare", "anchor": false}, {"co": "Siemens Healthineers", "anchor": false}, {"co": "Philips", "anchor": false}, {"co": "Johnson & Johnson", "anchor": false}, {"co": "Boston Scientific", "anchor": false}, {"co": "Abbott", "anchor": false}, {"co": "Canon Medical", "anchor": false}, {"co": "Fujifilm", "anchor": false}, {"co": "Baxter", "anchor": false}], "Specialists": [{"co": "InterSystems", "anchor": false}, {"co": "Intelerad", "anchor": false}, {"co": "Sectra", "anchor": false}, {"co": "Agfa", "anchor": false}, {"co": "Medicalis", "anchor": false}, {"co": "EDEN Technologies", "anchor": false}, {"co": "Zimmer Biomet", "anchor": false}, {"co": "United Imaging", "anchor": false}, {"co": "Fresenius", "anchor": false}], "Startups": [{"co": "Aidoc", "anchor": false}, {"co": "a2z Radiology AI", "anchor": false}, {"co": "Rad AI", "anchor": false}, {"co": "Koios Medical", "anchor": false}, {"co": "icometrix", "anchor": false}, {"co": "Midjourney Medical", "anchor": false}, {"co": "Spectrum Dynamics", "anchor": false}], "Enablers": [{"co": "SAP", "anchor": false}, {"co": "Oracle Health", "anchor": false}, {"co": "Microsoft", "anchor": false}, {"co": "IBM", "anchor": false}]}, "bsectors": [{"s": "Hospitales privados", "cos": ["Grupo Ángeles Servicios de Salud", "Hospitales MAC", "Salud Digna", "Christus Muguerza", "AUNA", "Grupo Hospitalario Dalinde / San Ángel Inn", "TecSalud", "Medica Sur", "Star Medica"]}, {"s": "Clínicas", "cos": []}, {"s": "Farmacias", "cos": []}]}, "B11": {"name": "IA clínica", "what": "Detección asistida, algoritmos diagnósticos, soporte a la decisión", "n": 16, "buyers": [{"co": "Grupo Ángeles Servicios de Salud", "n": 1, "ex": ["Implement robotic GLP automation for Angeles Central Laboratory"], "divs": [{"div": "AISHA · plataforma digital y TI", "codes": ["B11", "B12", "B13", "B14", "B15", "B16", "B17"], "people": [{"n": "Juan Pablo Reyes González", "r": "Head of AISHA", "l": "C-Suite"}, {"n": "Jaime Sánchez Ramírez", "r": "CIO", "l": "C-Suite"}, {"n": "Juan Sañudo Gavaldón", "r": "Director of business intelligence", "l": "Director"}, {"n": "Issac Jurado Ancona", "r": "Director of systems", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": [{"n": "Juan Pablo Reyes González", "r": "Head of AISHA", "l": "C-Suite"}, {"n": "Jaime Sánchez Ramírez", "r": "CIO", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Juan Sañudo Gavaldón", "r": "Director of business intelligence", "l": "Director"}, {"n": "Issac Jurado Ancona", "r": "Director of systems", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "Salud Digna", "n": 6, "ex": ["agreement with Koios to refine work in imaging and expand into other areas", "Deployment of digital solutions to streamline clinical care protocols", "Implemented online results platforms and predictive tools for early detection of diseases"], "divs": []}, {"co": "Christus Muguerza", "n": 4, "ex": ["Investment of around 1.2 billion pesos in clinical software and AI algorithms", "Establishment of the first digital hospital", "introduce artificial intelligence systems for imaging results"], "divs": []}, {"co": "Hospitales MAC", "n": 3, "ex": ["inaugurate its 21st hospital in La Viga, Iztapalapa", "launch a project called ‘Transforma’ using Artificial Intelligence", "implement AI-driven hemodynamics in operating rooms"], "divs": []}, {"co": "AUNA", "n": 1, "ex": ["focus on scaling its healthcare models and integrating cutting-edge technologies"], "divs": []}, {"co": "Medica Sur", "n": 1, "ex": ["MÉDICA implemented the EDEN RIS/PACS platform in Imaging and other departments"], "divs": []}], "sellers": [{"co": "GE HealthCare", "divs": [{"div": "Imaging", "codes": ["B01", "B09", "B11", "B13"], "people": [{"n": "Alejandro Valenzuela", "r": "Global Director, Product Marketing", "l": "C-Suite"}], "why": "AI-enabled software suite across the imaging lifecycle; AI-enabled solutions in molecular imaging.", "desc": "CT, MR, molecular imaging, X-ray and women's health. The largest single division across the six accounts at $9.2bn.", "groups": [{"f": "Alta dirección", "people": [{"n": "Alejandro Valenzuela", "r": "Global Director, Product Marketing", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "Mindray", "divs": [{"div": "In-vitro Diagnostics", "codes": ["B02", "B11", "B14"], "people": [{"n": "Oscar O.", "r": "Sr Regional PLM — IVD Lab Automation LATAM", "l": "Director"}, {"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}], "why": "Qiyuan Laboratory LLM — an AI expert system purpose-built for the medical laboratory domain.", "desc": "Laboratory analysers and reagents — haematology, biochemistry, chemiluminescence immunoassay and coagulation. Mindray's largest line at 37% of revenue.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}]}, {"f": "Producto", "people": [{"n": "Oscar O.", "r": "Sr Regional PLM — IVD Lab Automation LATAM", "l": "Director"}]}]}, {"div": "Patient Monitoring & Life Support", "codes": ["B05", "B11", "B15", "B10"], "people": [{"n": "Arlette Sánchez", "r": "Product Manager", "l": "Gerente"}, {"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}], "why": "Qiyuan Critical Care LLM and Qiyuan Perioperative Medical LLM.", "desc": "Monitors, ventilators, anaesthesia machines, defibrillators, infusion pumps, operating tables, lights and supply units.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}]}, {"f": "Producto", "people": [{"n": "Arlette Sánchez", "r": "Product Manager", "l": "Gerente"}]}]}, {"div": "Medical Imaging System", "codes": ["B01", "B11"], "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}], "why": "QiYuan Ultrasound Large Model, plus obstetrics-gynaecology and breast LLMs.", "desc": "Ultrasound and radiology systems.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}]}, {"f": "Producto", "people": []}]}]}, {"co": "Medtronic", "divs": [{"div": "Cardiovascular Portfolio", "codes": ["B06", "B11", "B15"], "people": [{"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}, {"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}], "why": "AccuRhythm AI algorithms in LINQ II insertable cardiac monitors.", "desc": "Cardiac rhythm and heart failure, structural heart and aortic, coronary and peripheral vascular. Medtronic's largest portfolio at 37%.", "groups": [{"f": "Alta dirección", "people": [{"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}, {"div": "Neuroscience Portfolio", "codes": ["B07", "B04", "B11"], "people": [{"n": "Luis Eduardo Martínez Luengo", "r": "Country Regional Head — Neuroscience", "l": "Director"}, {"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}, {"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}], "why": "UNiD adaptive spine intelligence AI; AiBLE ecosystem; BrainSense adaptive DBS.", "desc": "Cranial and spinal technologies, specialty therapies and neuromodulation.", "groups": [{"f": "Alta dirección", "people": [{"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Luis Eduardo Martínez Luengo", "r": "Country Regional Head — Neuroscience", "l": "Director"}]}, {"f": "Marketing", "people": [{"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}, {"div": "Medical Surgical Portfolio", "codes": ["B03", "B04", "B11", "B17"], "people": [{"n": "Angie Leycegui", "r": "Sr Sales Director — Medical Surgical BU", "l": "Director"}, {"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}, {"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}], "why": "Touch Surgery Enterprise AI surgical video platform; GI Genius intelligent endoscopy.", "desc": "Surgical and endoscopy — including Hugo robotics and GI Genius — plus acute care and monitoring.", "groups": [{"f": "Alta dirección", "people": [{"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Angie Leycegui", "r": "Sr Sales Director — Medical Surgical BU", "l": "Director"}]}, {"f": "Marketing", "people": [{"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}]}], "tiers": {"Leaders": [{"co": "GE HealthCare", "anchor": true}, {"co": "Mindray", "anchor": true}, {"co": "Medtronic", "anchor": true}], "Specialists": [{"co": "InterSystems", "anchor": false}, {"co": "Intelerad", "anchor": false}, {"co": "Sectra", "anchor": false}, {"co": "Agfa", "anchor": false}, {"co": "Medicalis", "anchor": false}, {"co": "EDEN Technologies", "anchor": false}, {"co": "Dedalus", "anchor": false}, {"co": "MV", "anchor": false}, {"co": "Pixeon", "anchor": false}, {"co": "regional HIS providers", "anchor": false}], "Startups": [{"co": "Aidoc", "anchor": false}, {"co": "a2z Radiology AI", "anchor": false}, {"co": "Rad AI", "anchor": false}, {"co": "Koios Medical", "anchor": false}, {"co": "icometrix", "anchor": false}, {"co": "Mecha Health", "anchor": false}, {"co": "Clivi", "anchor": false}, {"co": "Unima", "anchor": false}], "Enablers": [{"co": "SAP", "anchor": false}, {"co": "Oracle Health", "anchor": false}, {"co": "Microsoft", "anchor": false}, {"co": "IBM", "anchor": false}]}, "bsectors": [{"s": "Hospitales privados", "cos": ["Grupo Ángeles Servicios de Salud", "Salud Digna", "Christus Muguerza", "Hospitales MAC", "AUNA", "Medica Sur"]}, {"s": "Clínicas", "cos": []}]}, "B12": {"name": "Sistemas clínicos y empresariales", "what": "Expediente electrónico, HIS, ERP, CRM, flujos de trabajo", "n": 34, "buyers": [{"co": "Grupo Ángeles Servicios de Salud", "n": 2, "ex": ["Implement robotic GLP automation for Angeles Central Laboratory", "developed a new hospital in Querétaro to provide quality hospital services"], "divs": [{"div": "AISHA · plataforma digital y TI", "codes": ["B11", "B12", "B13", "B14", "B15", "B16", "B17"], "people": [{"n": "Juan Pablo Reyes González", "r": "Head of AISHA", "l": "C-Suite"}, {"n": "Jaime Sánchez Ramírez", "r": "CIO", "l": "C-Suite"}, {"n": "Juan Sañudo Gavaldón", "r": "Director of business intelligence", "l": "Director"}, {"n": "Issac Jurado Ancona", "r": "Director of systems", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": [{"n": "Juan Pablo Reyes González", "r": "Head of AISHA", "l": "C-Suite"}, {"n": "Jaime Sánchez Ramírez", "r": "CIO", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Juan Sañudo Gavaldón", "r": "Director of business intelligence", "l": "Director"}, {"n": "Issac Jurado Ancona", "r": "Director of systems", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "Hospitales MAC", "n": 12, "ex": ["Exploring the 'liquid hospital' model combining inpatient services with home-based care", "open its 23rd hospital in Interlomas", "Planning to open at least three new hospitals within the next six months"], "divs": []}, {"co": "AUNA", "n": 8, "ex": ["Integrate the Oncocenter into our healthcare network in Mexico", "implementation of a new comprehensive IT system for our Mexico operations", "implementation of the AunaWay"], "divs": []}, {"co": "Christus Muguerza", "n": 5, "ex": ["Investment of around 1.2 billion pesos in clinical software and AI algorithms", "Establishment of the first digital hospital", "invest 2 billion pesos to build a hospital in Los Cabos"], "divs": []}, {"co": "Salud Digna", "n": 3, "ex": ["Deployment of digital solutions to streamline clinical care protocols", "Implemented online results platforms and predictive tools for early detection of diseases", "Partnerships with companies providing technology and AI systems"], "divs": []}, {"co": "Medica Sur", "n": 2, "ex": ["implement a centralised Electronic Health Record", "invested P$200 million in digital transformation, equipment and the refurbishment of its facilities"], "divs": []}, {"co": "Grupo Hospitalario Dalinde / San Ángel Inn", "n": 1, "ex": ["Opening of new facility in Satélite"], "divs": []}, {"co": "TecSalud", "n": 1, "ex": ["Migrating electronic medical records to a new platform and integrating it"], "divs": []}], "sellers": [], "tiers": {"Leaders": [], "Specialists": [{"co": "InterSystems", "anchor": false}, {"co": "Intelerad", "anchor": false}, {"co": "Sectra", "anchor": false}, {"co": "Agfa", "anchor": false}, {"co": "Medicalis", "anchor": false}, {"co": "EDEN Technologies", "anchor": false}], "Startups": [{"co": "Aidoc", "anchor": false}, {"co": "a2z Radiology AI", "anchor": false}, {"co": "Rad AI", "anchor": false}, {"co": "Koios Medical", "anchor": false}, {"co": "icometrix", "anchor": false}], "Enablers": [{"co": "SAP", "anchor": false}, {"co": "Oracle Health", "anchor": false}, {"co": "Microsoft", "anchor": false}, {"co": "IBM", "anchor": false}]}, "bsectors": [{"s": "Hospitales privados", "cos": ["Grupo Ángeles Servicios de Salud", "Hospitales MAC", "AUNA", "Christus Muguerza", "Salud Digna", "Medica Sur", "Grupo Hospitalario Dalinde / San Ángel Inn", "TecSalud"]}, {"s": "Clínicas", "cos": []}, {"s": "Farmacias", "cos": []}]}, "B13": {"name": "TI de imagen (PACS/RIS)", "what": "Archivo, distribución y lectura de estudios", "n": 3, "buyers": [{"co": "AUNA", "n": 1, "ex": ["implementation of a new comprehensive IT system for our Mexico operations"], "divs": []}, {"co": "Christus Muguerza", "n": 1, "ex": ["Investment of around 1.2 billion pesos in clinical software and AI algorithms"], "divs": []}, {"co": "Medica Sur", "n": 1, "ex": ["MÉDICA implemented the EDEN RIS/PACS platform in Imaging and other departments"], "divs": []}], "sellers": [{"co": "GE HealthCare", "divs": [{"div": "Imaging", "codes": ["B01", "B09", "B11", "B13"], "people": [{"n": "Alejandro Valenzuela", "r": "Global Director, Product Marketing", "l": "C-Suite"}], "desc": "CT, MR, molecular imaging, X-ray and women's health. The largest single division across the six accounts at $9.2bn.", "groups": [{"f": "Alta dirección", "people": [{"n": "Alejandro Valenzuela", "r": "Global Director, Product Marketing", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}], "tiers": {"Leaders": [{"co": "GE HealthCare", "anchor": true}], "Specialists": [{"co": "InterSystems", "anchor": false}, {"co": "Intelerad", "anchor": false}, {"co": "Sectra", "anchor": false}, {"co": "Agfa", "anchor": false}, {"co": "Medicalis", "anchor": false}, {"co": "EDEN Technologies", "anchor": false}], "Startups": [{"co": "Aidoc", "anchor": false}, {"co": "a2z Radiology AI", "anchor": false}, {"co": "Rad AI", "anchor": false}, {"co": "Koios Medical", "anchor": false}, {"co": "icometrix", "anchor": false}], "Enablers": [{"co": "SAP", "anchor": false}, {"co": "Oracle Health", "anchor": false}, {"co": "Microsoft", "anchor": false}, {"co": "IBM", "anchor": false}]}, "bsectors": [{"s": "Hospitales privados", "cos": ["AUNA", "Christus Muguerza", "Medica Sur"]}, {"s": "Clínicas", "cos": []}]}, "B14": {"name": "Plataformas de datos, nube y analítica", "what": "Data lake, nube, BI, analítica predictiva", "n": 3, "buyers": [{"co": "Christus Muguerza", "n": 1, "ex": ["Investment of around 1.2 billion pesos in clinical software and AI algorithms"], "divs": []}, {"co": "Salud Digna", "n": 1, "ex": ["Implemented online results platforms and predictive tools for early detection of diseases"], "divs": []}, {"co": "TecSalud", "n": 1, "ex": ["oriGen project, a genetic data repository to create genomic maps and develop personalized medicine"], "divs": []}], "sellers": [{"co": "Mindray", "divs": [{"div": "In-vitro Diagnostics", "codes": ["B02", "B11", "B14"], "people": [{"n": "Oscar O.", "r": "Sr Regional PLM — IVD Lab Automation LATAM", "l": "Director"}, {"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}], "desc": "Laboratory analysers and reagents — haematology, biochemistry, chemiluminescence immunoassay and coagulation. Mindray's largest line at 37% of revenue.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}]}, {"f": "Producto", "people": [{"n": "Oscar O.", "r": "Sr Regional PLM — IVD Lab Automation LATAM", "l": "Director"}]}]}]}], "tiers": {"Leaders": [{"co": "Mindray", "anchor": true}], "Specialists": [{"co": "InterSystems", "anchor": false}, {"co": "Dedalus", "anchor": false}, {"co": "MV", "anchor": false}, {"co": "Pixeon", "anchor": false}, {"co": "Sectra", "anchor": false}, {"co": "regional HIS providers", "anchor": false}], "Startups": [{"co": "Mecha Health", "anchor": false}, {"co": "Clivi", "anchor": false}, {"co": "Unima", "anchor": false}], "Enablers": [{"co": "Microsoft", "anchor": false}, {"co": "Oracle Health", "anchor": false}, {"co": "SAP", "anchor": false}, {"co": "IBM", "anchor": false}]}, "bsectors": [{"s": "Hospitales privados", "cos": ["Christus Muguerza", "Salud Digna", "TecSalud"]}, {"s": "Clínicas", "cos": []}]}, "B15": {"name": "Interoperabilidad y dispositivos conectados", "what": "Integración de equipos, estándares, telemetría", "n": 5, "buyers": [{"co": "AUNA", "n": 2, "ex": ["implementation of a new comprehensive IT system for our Mexico operations", "implementation of SAP and Hospital Information Systems in Monterrey"], "divs": []}, {"co": "Christus Muguerza", "n": 1, "ex": ["Establishment of the first digital hospital"], "divs": []}, {"co": "Salud Digna", "n": 1, "ex": ["Deployment of digital solutions to streamline clinical care protocols"], "divs": []}, {"co": "TecSalud", "n": 1, "ex": ["Migrating electronic medical records to a new platform and integrating it"], "divs": []}], "sellers": [{"co": "GE HealthCare", "divs": [{"div": "Patient Care Solutions", "codes": ["B05", "B15", "B06"], "people": [{"n": "José Antonio León Chávez", "r": "Regional PM — Maternal Infant Care & Monitoring", "l": "Director"}, {"n": "Ana Covarrubias Ordaz", "r": "PM — Patient Care Solutions", "l": "Gerente"}], "desc": "Patient monitoring, diagnostic cardiology, maternal-infant care, anaesthesia and consumables.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "José Antonio León Chávez", "r": "Regional PM — Maternal Infant Care & Monitoring", "l": "Director"}, {"n": "Ana Covarrubias Ordaz", "r": "PM — Patient Care Solutions", "l": "Gerente"}]}]}]}, {"co": "Dräger", "divs": [{"div": "Medical", "codes": ["B05", "B03", "B15", "B19"], "people": [{"n": "Pablo Bufano", "r": "Managing Director, Mexico", "l": "C-Suite"}, {"n": "Javier Alejandro López", "r": "Regional PM — Anaesthesia, Monitoring & WPI", "l": "Director"}, {"n": "América Gastélum", "r": "Commercial Director", "l": "Director"}, {"n": "Blanca López Chávez", "r": "LATAM Strategic Product Manager", "l": "Gerente"}], "desc": "Anaesthesia, ventilation, patient monitoring, neonatal care, and Workplace Infrastructure — ceiling supply units, surgical lights and medical gas management. One division, entirely acute care.", "groups": [{"f": "Alta dirección", "people": [{"n": "Pablo Bufano", "r": "Managing Director, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "América Gastélum", "r": "Commercial Director", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "Javier Alejandro López", "r": "Regional PM — Anaesthesia, Monitoring & WPI", "l": "Director"}, {"n": "Blanca López Chávez", "r": "LATAM Strategic Product Manager", "l": "Gerente"}]}]}]}, {"co": "Mindray", "divs": [{"div": "Patient Monitoring & Life Support", "codes": ["B05", "B11", "B15", "B10"], "people": [{"n": "Arlette Sánchez", "r": "Product Manager", "l": "Gerente"}, {"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}], "desc": "Monitors, ventilators, anaesthesia machines, defibrillators, infusion pumps, operating tables, lights and supply units.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Jesús Emmanuel Ponce de León", "r": "National Marketing Manager", "l": "Director"}]}, {"f": "Producto", "people": [{"n": "Arlette Sánchez", "r": "Product Manager", "l": "Gerente"}]}]}]}, {"co": "B. Braun", "divs": [{"div": "Hospital Care", "codes": ["B10", "B15"], "people": [{"n": "Adriana Ortega", "r": "National Sales Manager", "l": "Director"}, {"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}, {"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}], "desc": "Infusion therapy and infusion management, IV solutions, nutrition therapy, pain therapy, catheters and sets. 54% of the group.", "groups": [{"f": "Alta dirección", "people": [{"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Adriana Ortega", "r": "National Sales Manager", "l": "Director"}]}, {"f": "Marketing", "people": [{"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}]}, {"co": "Medtronic", "divs": [{"div": "Cardiovascular Portfolio", "codes": ["B06", "B11", "B15"], "people": [{"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}, {"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}], "desc": "Cardiac rhythm and heart failure, structural heart and aortic, coronary and peripheral vascular. Medtronic's largest portfolio at 37%.", "groups": [{"f": "Alta dirección", "people": [{"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": [{"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}]}], "tiers": {"Leaders": [{"co": "GE HealthCare", "anchor": true}, {"co": "Mindray", "anchor": true}, {"co": "B. Braun", "anchor": true}, {"co": "Medtronic", "anchor": true}], "Specialists": [{"co": "Dräger", "anchor": true}, {"co": "InterSystems", "anchor": false}, {"co": "Dedalus", "anchor": false}, {"co": "MV", "anchor": false}, {"co": "Pixeon", "anchor": false}, {"co": "Sectra", "anchor": false}, {"co": "regional HIS providers", "anchor": false}], "Startups": [{"co": "Mecha Health", "anchor": false}, {"co": "Clivi", "anchor": false}, {"co": "Unima", "anchor": false}], "Enablers": [{"co": "Microsoft", "anchor": false}, {"co": "Oracle Health", "anchor": false}, {"co": "SAP", "anchor": false}, {"co": "IBM", "anchor": false}]}, "bsectors": [{"s": "Hospitales privados", "cos": ["AUNA", "Christus Muguerza", "Salud Digna", "TecSalud"]}]}, "B16": {"name": "Ciberseguridad", "what": "Protección del dato clínico, SGSI, continuidad", "n": 2, "buyers": [{"co": "Christus Muguerza", "n": 1, "ex": ["Investment of around 1.2 billion pesos in clinical software and AI algorithms"], "divs": []}, {"co": "Medica Sur", "n": 1, "ex": ["implement an Information Security Management System"], "divs": []}], "sellers": [], "tiers": {"Leaders": [], "Specialists": [{"co": "InterSystems", "anchor": false}, {"co": "Dedalus", "anchor": false}, {"co": "MV", "anchor": false}, {"co": "Pixeon", "anchor": false}, {"co": "Sectra", "anchor": false}, {"co": "regional HIS providers", "anchor": false}], "Startups": [{"co": "Mecha Health", "anchor": false}, {"co": "Clivi", "anchor": false}, {"co": "Unima", "anchor": false}], "Enablers": [{"co": "Microsoft", "anchor": false}, {"co": "Oracle Health", "anchor": false}, {"co": "SAP", "anchor": false}, {"co": "IBM", "anchor": false}]}, "bsectors": [{"s": "Hospitales privados", "cos": ["Christus Muguerza", "Medica Sur"]}, {"s": "Clínicas", "cos": []}]}, "B17": {"name": "Atención virtual y remota", "what": "Telemedicina, hospital en casa, monitoreo remoto", "n": 5, "buyers": [{"co": "Hospitales MAC", "n": 2, "ex": ["introduce MAC at Home service", "Exploring the 'liquid hospital' model combining inpatient services with home-based care"], "divs": []}, {"co": "Centro Medico ABC", "n": 1, "ex": ["launch a new initiative focused on providing care for international patients"], "divs": []}, {"co": "Medica Sur", "n": 1, "ex": ["pioneering the implementation of a medical tourism department"], "divs": []}, {"co": "TecSalud", "n": 1, "ex": ["established partnerships with Nuevo León to treat and monitor patients with various conditions"], "divs": []}], "sellers": [{"co": "Stryker", "divs": [{"div": "MedSurg & Neurotechnology", "codes": ["B03", "B04", "B05", "B06", "B17"], "people": [{"n": "Aranza Boizo", "r": "Product Manager", "l": "Gerente"}, {"n": "Laura Del Río", "r": "General Manager, Mexico", "l": "C-Suite"}], "desc": "Instruments, endoscopy, medical equipment including beds and emergency, vascular, neuro cranial, and Vocera clinical communications. 62% of Stryker.", "groups": [{"f": "Alta dirección", "people": [{"n": "Laura Del Río", "r": "General Manager, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "Aranza Boizo", "r": "Product Manager", "l": "Gerente"}]}]}]}, {"co": "Medtronic", "divs": [{"div": "Medical Surgical Portfolio", "codes": ["B03", "B04", "B11", "B17"], "people": [{"n": "Angie Leycegui", "r": "Sr Sales Director — Medical Surgical BU", "l": "Director"}, {"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}, {"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}], "desc": "Surgical and endoscopy — including Hugo robotics and GI Genius — plus acute care and monitoring.", "groups": [{"f": "Alta dirección", "people": [{"n": "Arturo Braniff", "r": "Chief Commercial Officer", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Angie Leycegui", "r": "Sr Sales Director — Medical Surgical BU", "l": "Director"}]}, {"f": "Marketing", "people": [{"n": "Joaquín Velázquez", "r": "Strategic Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}]}], "tiers": {"Leaders": [{"co": "Stryker", "anchor": true}, {"co": "Medtronic", "anchor": true}, {"co": "GE HealthCare", "anchor": false}, {"co": "Siemens Healthineers", "anchor": false}, {"co": "Philips", "anchor": false}, {"co": "Boston Scientific", "anchor": false}, {"co": "Mindray", "anchor": false}, {"co": "Canon Medical", "anchor": false}, {"co": "Baxter", "anchor": false}, {"co": "B. Braun", "anchor": false}], "Specialists": [{"co": "Fresenius", "anchor": false}, {"co": "United Imaging", "anchor": false}], "Startups": [{"co": "Clivi", "anchor": false}, {"co": "Unima", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": ["Hospitales MAC", "Centro Medico ABC", "Medica Sur", "TecSalud"]}, {"s": "Clínicas", "cos": []}]}, "B18": {"name": "Construcción e ingeniería", "what": "Obra nueva, torres, ampliación, remodelación, nuevas sedes", "n": 57, "buyers": [{"co": "Grupo Ángeles Servicios de Salud", "n": 3, "ex": ["developed a new hospital in Querétaro to provide quality hospital services", "20 billion peso investment in projects such as Hospital Angeles Andares and the Polanco and Arboledas hospital", "Ten expansion projects underway at various hospitals adding 695,000 square metres"], "divs": [{"div": "Dirección corporativa", "codes": ["B18", "B20"], "people": [{"n": "Jesús Ruiz López", "r": "CEO", "l": "C-Suite"}, {"n": "Marcos Rodríguez Martínez", "r": "Managing Director", "l": "C-Suite"}, {"n": "Rafael G.", "r": "Director general – operations & strategy", "l": "C-Suite"}], "groups": [{"f": "Alta dirección", "people": [{"n": "Jesús Ruiz López", "r": "CEO", "l": "C-Suite"}, {"n": "Marcos Rodríguez Martínez", "r": "Managing Director", "l": "C-Suite"}, {"n": "Rafael G.", "r": "Director general – operations & strategy", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}, {"div": "Red hospitalaria · 27 hospitales", "codes": ["B18", "B03", "B05", "B10", "B19"], "people": [{"n": "Gerardo Campillo", "r": "Director of operations", "l": "C-Suite"}, {"n": "Camilo Pérez Aldir", "r": "Regional director of operations", "l": "Director"}, {"n": "Margarita Name Saucedo", "r": "Operations Director", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": [{"n": "Gerardo Campillo", "r": "Director of operations", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Camilo Pérez Aldir", "r": "Regional director of operations", "l": "Director"}, {"n": "Margarita Name Saucedo", "r": "Operations Director", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}, {"div": "Proyectos e infraestructura", "codes": ["B18", "B19", "B20"], "people": [{"n": "Juan C. Martínez", "r": "Head of project infrastructure", "l": "Director"}, {"n": "Fátima Martínez Vásquez", "r": "Head of operations & expansion", "l": "Director"}, {"n": "Fernando Araujo Rivera", "r": "Director of operations & projects", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": [{"n": "Juan C. Martínez", "r": "Head of project infrastructure", "l": "Director"}, {"n": "Fátima Martínez Vásquez", "r": "Head of operations & expansion", "l": "Director"}, {"n": "Fernando Araujo Rivera", "r": "Director of operations & projects", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "AUNA", "n": 14, "ex": ["closing agreements for OncoSalud network in four principal cities of Mexico", "inaugurating a new OncoCenter at Doctors Hospital", "roll out our capabilities in Peru's healthcare market"], "divs": []}, {"co": "Hospitales MAC", "n": 12, "ex": ["expanding its property division with medical practices available for sale and rent", "open its 23rd hospital in Interlomas", "Planning to open at least three new hospitals within the next six months"], "divs": []}, {"co": "Christus Muguerza", "n": 8, "ex": ["invest 2 billion pesos to build a hospital in Los Cabos", "opened its new Medical Centre in a historic building", "Building a hospital at the University of Monterrey (UDEM)"], "divs": []}, {"co": "Medica Sur", "n": 6, "ex": ["implement strict safety measures, such as a comprehensive facility protection plan", "$22.4 million invested in medical equipment and refurbishment of the gynaecology and obstetrics ward.", "$19.2 million invested in the refurbishment of the facilities in Tower II of the Outpatient Clinics."], "divs": []}, {"co": "Salud Digna", "n": 6, "ex": ["create Sensory Rooms to enhance patient experience", "open at least 40 more clinics", "open 35 units throughout 2024"], "divs": []}, {"co": "TecSalud", "n": 5, "ex": ["opening of its third Primary Care Clinic in Valle Poniente", "Opening of a new TecSalud clinic on Vía Cordillera", "expanding nationally through the TecSalud Network"], "divs": []}, {"co": "Star Medica", "n": 2, "ex": ["expanding a network of private hospitals under Star Médica and Vivo brands", "building a new Star Médica hospital in León"], "divs": []}, {"co": "Grupo Hospitalario Dalinde / San Ángel Inn", "n": 1, "ex": ["Opening of new facility in Satélite"], "divs": []}], "sellers": [], "tiers": {"Leaders": [{"co": "GE HealthCare", "anchor": false}, {"co": "Siemens Healthineers", "anchor": false}, {"co": "Philips", "anchor": false}, {"co": "Johnson & Johnson", "anchor": false}, {"co": "Boston Scientific", "anchor": false}, {"co": "Abbott", "anchor": false}, {"co": "Mindray", "anchor": false}, {"co": "Canon Medical", "anchor": false}, {"co": "Fujifilm", "anchor": false}, {"co": "Baxter", "anchor": false}, {"co": "B. Braun", "anchor": false}], "Specialists": [{"co": "Zimmer Biomet", "anchor": false}, {"co": "United Imaging", "anchor": false}, {"co": "Fresenius", "anchor": false}], "Startups": [{"co": "Midjourney Medical", "anchor": false}, {"co": "Spectrum Dynamics", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": ["Grupo Ángeles Servicios de Salud", "AUNA", "Hospitales MAC", "Christus Muguerza", "Medica Sur", "Salud Digna", "TecSalud", "Star Medica", "Grupo Hospitalario Dalinde / San Ángel Inn"]}, {"s": "Clínicas", "cos": []}]}, "B19": {"name": "Energía, utilities y sostenibilidad", "what": "Eléctrico, HVAC, gases medicinales, agua, eficiencia", "n": 32, "buyers": [{"co": "Grupo Ángeles Servicios de Salud", "n": 3, "ex": ["developed a new hospital in Querétaro to provide quality hospital services", "20 billion peso investment in projects such as Hospital Angeles Andares and the Polanco and Arboledas hospital", "Ten expansion projects underway at various hospitals adding 695,000 square metres"], "divs": [{"div": "Red hospitalaria · 27 hospitales", "codes": ["B18", "B03", "B05", "B10", "B19"], "people": [{"n": "Gerardo Campillo", "r": "Director of operations", "l": "C-Suite"}, {"n": "Camilo Pérez Aldir", "r": "Regional director of operations", "l": "Director"}, {"n": "Margarita Name Saucedo", "r": "Operations Director", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": [{"n": "Gerardo Campillo", "r": "Director of operations", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Camilo Pérez Aldir", "r": "Regional director of operations", "l": "Director"}, {"n": "Margarita Name Saucedo", "r": "Operations Director", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}, {"div": "Proyectos e infraestructura", "codes": ["B18", "B19", "B20"], "people": [{"n": "Juan C. Martínez", "r": "Head of project infrastructure", "l": "Director"}, {"n": "Fátima Martínez Vásquez", "r": "Head of operations & expansion", "l": "Director"}, {"n": "Fernando Araujo Rivera", "r": "Director of operations & projects", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": [{"n": "Juan C. Martínez", "r": "Head of project infrastructure", "l": "Director"}, {"n": "Fátima Martínez Vásquez", "r": "Head of operations & expansion", "l": "Director"}, {"n": "Fernando Araujo Rivera", "r": "Director of operations & projects", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}, {"div": "Ingeniería biomédica y compras", "codes": ["B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "B19"], "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": [{"n": "Carolina Camarena Guzmán", "r": "Head of Biomedical Engineering", "l": "Director"}, {"n": "Marlene Arellano Gama", "r": "Head of procurement", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "Hospitales MAC", "n": 10, "ex": ["open its 23rd hospital in Interlomas", "Planning to open at least three new hospitals within the next six months", "open eight new hospitals in 2024, bringing the total to 30 by the end of the year"], "divs": []}, {"co": "Medica Sur", "n": 5, "ex": ["Modernisation of lighting systems using LED technology", "Replacement of HVAC equipment with more efficient systems", "Implementation of strategies to optimise water consumption"], "divs": []}, {"co": "Salud Digna", "n": 5, "ex": ["open at least 40 more clinics", "open 35 units throughout 2024", "open 50 branches in the following year"], "divs": []}, {"co": "Christus Muguerza", "n": 4, "ex": ["invest 2 billion pesos to build a hospital in Los Cabos", "Building a hospital at the University of Monterrey (UDEM)", "Break ground on a new hospital in Cabo San Lucas, Mexico"], "divs": []}, {"co": "TecSalud", "n": 2, "ex": ["build the new Health Sciences Campus", "Increasing capacity of Zambrano Hellion Hospital by 50%."], "divs": []}, {"co": "AUNA", "n": 1, "ex": ["Chile continues implementing long-term plans for hospital construction and primary care centers"], "divs": []}, {"co": "Grupo Hospitalario Dalinde / San Ángel Inn", "n": 1, "ex": ["Opening of new facility in Satélite"], "divs": []}, {"co": "Star Medica", "n": 1, "ex": ["building a new Star Médica hospital in León"], "divs": []}], "sellers": [{"co": "Dräger", "divs": [{"div": "Medical", "codes": ["B05", "B03", "B15", "B19"], "people": [{"n": "Pablo Bufano", "r": "Managing Director, Mexico", "l": "C-Suite"}, {"n": "Javier Alejandro López", "r": "Regional PM — Anaesthesia, Monitoring & WPI", "l": "Director"}, {"n": "América Gastélum", "r": "Commercial Director", "l": "Director"}, {"n": "Blanca López Chávez", "r": "LATAM Strategic Product Manager", "l": "Gerente"}], "desc": "Anaesthesia, ventilation, patient monitoring, neonatal care, and Workplace Infrastructure — ceiling supply units, surgical lights and medical gas management. One division, entirely acute care.", "groups": [{"f": "Alta dirección", "people": [{"n": "Pablo Bufano", "r": "Managing Director, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "América Gastélum", "r": "Commercial Director", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": [{"n": "Javier Alejandro López", "r": "Regional PM — Anaesthesia, Monitoring & WPI", "l": "Director"}, {"n": "Blanca López Chávez", "r": "LATAM Strategic Product Manager", "l": "Gerente"}]}]}]}], "tiers": {"Leaders": [{"co": "GE HealthCare", "anchor": false}, {"co": "Siemens Healthineers", "anchor": false}, {"co": "Philips", "anchor": false}, {"co": "Johnson & Johnson", "anchor": false}, {"co": "Boston Scientific", "anchor": false}, {"co": "Abbott", "anchor": false}, {"co": "Mindray", "anchor": false}, {"co": "Canon Medical", "anchor": false}, {"co": "Fujifilm", "anchor": false}, {"co": "Baxter", "anchor": false}, {"co": "B. Braun", "anchor": false}], "Specialists": [{"co": "Dräger", "anchor": true}, {"co": "Zimmer Biomet", "anchor": false}, {"co": "United Imaging", "anchor": false}, {"co": "Fresenius", "anchor": false}], "Startups": [{"co": "Midjourney Medical", "anchor": false}, {"co": "Spectrum Dynamics", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": ["Grupo Ángeles Servicios de Salud", "Hospitales MAC", "Medica Sur", "Salud Digna", "Christus Muguerza", "TecSalud", "AUNA", "Grupo Hospitalario Dalinde / San Ángel Inn", "Star Medica"]}]}, "B20": {"name": "Financiamiento y capital", "what": "Bonos, arrendamiento, PPP, socios de capital", "n": 9, "buyers": [{"co": "Grupo Ángeles Servicios de Salud", "n": 2, "ex": ["exploring further growth opportunities through acquisitions", "20 billion peso investment in projects such as Hospital Angeles Andares and the Polanco and Arboledas hospital"], "divs": [{"div": "Dirección corporativa", "codes": ["B18", "B20"], "people": [{"n": "Jesús Ruiz López", "r": "CEO", "l": "C-Suite"}, {"n": "Marcos Rodríguez Martínez", "r": "Managing Director", "l": "C-Suite"}, {"n": "Rafael G.", "r": "Director general – operations & strategy", "l": "C-Suite"}], "groups": [{"f": "Alta dirección", "people": [{"n": "Jesús Ruiz López", "r": "CEO", "l": "C-Suite"}, {"n": "Marcos Rodríguez Martínez", "r": "Managing Director", "l": "C-Suite"}, {"n": "Rafael G.", "r": "Director general – operations & strategy", "l": "C-Suite"}]}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}, {"div": "Proyectos e infraestructura", "codes": ["B18", "B19", "B20"], "people": [{"n": "Juan C. Martínez", "r": "Head of project infrastructure", "l": "Director"}, {"n": "Fátima Martínez Vásquez", "r": "Head of operations & expansion", "l": "Director"}, {"n": "Fernando Araujo Rivera", "r": "Director of operations & projects", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": [{"n": "Juan C. Martínez", "r": "Head of project infrastructure", "l": "Director"}, {"n": "Fátima Martínez Vásquez", "r": "Head of operations & expansion", "l": "Director"}, {"n": "Fernando Araujo Rivera", "r": "Director of operations & projects", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "AUNA", "n": 3, "ex": ["Auna Group entered a strategic partnership with Sojitz Corporation to expand healthcare in LATAM", "Amend the concession and get permits for the Trecca project", "Invest $500 million in expansion plans in Mexico"], "divs": []}, {"co": "Hospitales MAC", "n": 2, "ex": ["expanding its property division with medical practices available for sale and rent", "Expanding medical real estate portfolio with over 300 consultation offices"], "divs": []}, {"co": "Medica Sur", "n": 1, "ex": ["Issued P$1 billion in long-term sustainable bonds"], "divs": []}, {"co": "Star Medica", "n": 1, "ex": ["expanding a network of private hospitals under Star Médica and Vivo brands"], "divs": []}], "sellers": [], "tiers": {"Leaders": [{"co": "GE HealthCare", "anchor": false}, {"co": "Siemens Healthineers", "anchor": false}, {"co": "Philips", "anchor": false}, {"co": "Johnson & Johnson", "anchor": false}, {"co": "Boston Scientific", "anchor": false}, {"co": "Abbott", "anchor": false}, {"co": "Mindray", "anchor": false}, {"co": "Canon Medical", "anchor": false}, {"co": "Fujifilm", "anchor": false}, {"co": "Baxter", "anchor": false}, {"co": "B. Braun", "anchor": false}], "Specialists": [{"co": "Zimmer Biomet", "anchor": false}, {"co": "United Imaging", "anchor": false}, {"co": "Fresenius", "anchor": false}], "Startups": [{"co": "Midjourney Medical", "anchor": false}, {"co": "Spectrum Dynamics", "anchor": false}, {"co": "Clivi", "anchor": false}, {"co": "Unima", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": ["Grupo Ángeles Servicios de Salud", "AUNA", "Hospitales MAC", "Medica Sur", "Star Medica"]}, {"s": "Clínicas", "cos": []}]}, "B21": {"name": "Investigación clínica y CROs", "what": "Ensayos, centros de investigación, repositorios", "n": 7, "buyers": [{"co": "TecSalud", "n": 5, "ex": ["build the new Health Sciences Campus", "establishing TecSalud as an Academic Medical Center with a model of excellence in care", "oriGen project, a genetic data repository to create genomic maps and develop personalized medicine"], "divs": []}, {"co": "Centro Medico ABC", "n": 1, "ex": ["Renewal of alliance with Houston Methodist Hospital for seven more years"], "divs": []}, {"co": "Medica Sur", "n": 1, "ex": ["celebrated the tenth anniversary of a partnership with the Mayo Clinic Care Network"], "divs": []}], "sellers": [], "tiers": {"Leaders": [{"co": "Roche", "anchor": false}, {"co": "MSD", "anchor": false}, {"co": "Novartis", "anchor": false}, {"co": "AstraZeneca", "anchor": false}, {"co": "Eli Lilly", "anchor": false}], "Specialists": [{"co": "Sandoz", "anchor": false}, {"co": "Teva", "anchor": false}, {"co": "Mayo Clinic", "anchor": false}, {"co": "Houston Methodist", "anchor": false}, {"co": "Tec de Monterrey", "anchor": false}, {"co": "UDEM", "anchor": false}, {"co": "Fiocruz", "anchor": false}, {"co": "Alnylam", "anchor": false}, {"co": "Butantan", "anchor": false}], "Startups": [{"co": "FACT", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": ["TecSalud", "Centro Medico ABC", "Medica Sur"]}]}, "B22": {"name": "Educación y alianzas académicas", "what": "Formación, certificación clínica, alianzas universitarias", "n": 12, "buyers": [{"co": "Grupo Ángeles Servicios de Salud", "n": 1, "ex": ["Formed a joint advisory council to enhance clinical and business operations"], "divs": [{"div": "Enseñanza, investigación y relaciones médicas", "codes": ["B21", "B22", "B23"], "people": [{"n": "Javier Santoveña", "r": "Director of Development & Medical Relations", "l": "Director"}], "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": [{"n": "Javier Santoveña", "r": "Director of Development & Medical Relations", "l": "Director"}]}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}, {"co": "TecSalud", "n": 6, "ex": ["build the new Health Sciences Campus", "establishing TecSalud as an Academic Medical Center with a model of excellence in care", "creation of the Obesity Research Institute and formation of academic partnerships"], "divs": []}, {"co": "Medica Sur", "n": 4, "ex": ["Annual Training Plan to enhance staff skills and professional growth.", "Agreement with the National School of Nursing for nurses to obtain a Bachelor’s degree.", "Training and certification of healthcare professionals at CESIDEM"], "divs": []}, {"co": "Centro Medico ABC", "n": 1, "ex": ["Renewal of alliance with Houston Methodist Hospital for seven more years"], "divs": []}], "sellers": [{"co": "B. Braun", "divs": [{"div": "Aesculap", "codes": ["B03", "B04", "B07", "B22"], "people": [{"n": "Marcus Cardinal", "r": "Sales Director", "l": "Director"}, {"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}, {"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}], "desc": "Surgical instruments, sutures, hip and knee implants, spine and neurosurgery, OR integration and robotic visualisation. B. Braun's surgical division, founded 1867.", "groups": [{"f": "Alta dirección", "people": [{"n": "Carlos Jiménez", "r": "Managing Director, Mexico", "l": "C-Suite"}]}, {"f": "Ventas", "people": [{"n": "Marcus Cardinal", "r": "Sales Director", "l": "Director"}]}, {"f": "Marketing", "people": [{"n": "Erik Carrasco", "r": "Marketing Manager", "l": "Gerente"}]}, {"f": "Producto", "people": []}]}]}], "tiers": {"Leaders": [{"co": "B. Braun", "anchor": true}, {"co": "Roche", "anchor": false}, {"co": "MSD", "anchor": false}, {"co": "Novartis", "anchor": false}, {"co": "AstraZeneca", "anchor": false}, {"co": "Eli Lilly", "anchor": false}], "Specialists": [{"co": "Sandoz", "anchor": false}, {"co": "Teva", "anchor": false}, {"co": "Mayo Clinic", "anchor": false}, {"co": "Houston Methodist", "anchor": false}, {"co": "Tec de Monterrey", "anchor": false}, {"co": "UDEM", "anchor": false}, {"co": "Fiocruz", "anchor": false}, {"co": "Alnylam", "anchor": false}, {"co": "Butantan", "anchor": false}], "Startups": [{"co": "FACT", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": ["Grupo Ángeles Servicios de Salud", "TecSalud", "Medica Sur", "Centro Medico ABC"]}]}, "B23": {"name": "Farmacéuticas y biotecnología", "what": "Terapias, biológicos, CAR-T, acceso temprano", "n": 0, "buyers": [], "sellers": [{"co": "GE HealthCare", "divs": [{"div": "Pharmaceutical Diagnostics", "codes": ["B09", "B23"], "people": [], "desc": "Contrast media and radiopharmaceuticals for radiology and nuclear medicine — a pharmaceutical business with its own commercial organisation, not a device one.", "groups": [{"f": "Alta dirección", "people": []}, {"f": "Ventas", "people": []}, {"f": "Marketing", "people": []}, {"f": "Producto", "people": []}]}]}], "tiers": {"Leaders": [{"co": "GE HealthCare", "anchor": true}, {"co": "Roche", "anchor": false}, {"co": "MSD", "anchor": false}, {"co": "Novartis", "anchor": false}, {"co": "AstraZeneca", "anchor": false}, {"co": "Eli Lilly", "anchor": false}], "Specialists": [{"co": "Sandoz", "anchor": false}, {"co": "Teva", "anchor": false}, {"co": "Mayo Clinic", "anchor": false}, {"co": "Houston Methodist", "anchor": false}, {"co": "Tec de Monterrey", "anchor": false}, {"co": "UDEM", "anchor": false}, {"co": "Fiocruz", "anchor": false}, {"co": "Alnylam", "anchor": false}, {"co": "Butantan", "anchor": false}], "Startups": [{"co": "FACT", "anchor": false}], "Enablers": []}, "bsectors": [{"s": "Hospitales privados", "cos": []}, {"s": "Farmacias", "cos": []}]}};
+const DATA = {"digital": [{"id": "1", "name": "Lleva tu operación a la era de la IA", "desc": "La IA dejó de ser un piloto. Ya cambia cómo se diagnostica, cómo fluye el paciente y cómo se decide.", "n": 66, "subs": [{"code": "B10", "name": "Consumibles, infusión y suministro", "n": 40}, {"code": "B12", "name": "Sistemas clínicos y empresariales", "n": 34}, {"code": "B11", "name": "IA clínica", "n": 16}, {"code": "B13", "name": "TI de imagen (PACS/RIS)", "n": 3}]}, {"id": "2", "name": "Convierte tus datos en inteligencia", "desc": "De datos encerrados en cada hospital a una sola vista de toda la red. La capa sobre la que se apoya todo lo demás.", "n": 54, "subs": [{"code": "B05", "name": "Monitoreo y soporte vital", "n": 34}, {"code": "B11", "name": "IA clínica", "n": 16}, {"code": "B15", "name": "Interoperabilidad y dispositivos conectados", "n": 5}, {"code": "B14", "name": "Plataformas de datos, nube y analítica", "n": 3}, {"code": "B16", "name": "Ciberseguridad", "n": 2}]}], "infra": [{"id": "3", "name": "Prepara tu red para la próxima década", "desc": "Abre y equipa nuevos hospitales sin perder ritmo: el ecosistema completo de infraestructura en una sola sala.", "n": 104, "subs": [{"code": "B01", "name": "Imagen y radiología", "n": 60}, {"code": "B18", "name": "Construcción e ingeniería", "n": 57}, {"code": "B03", "name": "Quirófano e instrumental", "n": 48}, {"code": "B02", "name": "Laboratorio e IVD", "n": 46}, {"code": "B10", "name": "Consumibles, infusión y suministro", "n": 40}, {"code": "B05", "name": "Monitoreo y soporte vital", "n": 34}, {"code": "B19", "name": "Energía, utilities y sostenibilidad", "n": 32}, {"code": "B06", "name": "Cardiovascular e intervencionismo", "n": 18}, {"code": "B20", "name": "Financiamiento y capital", "n": 9}, {"code": "B04", "name": "Robótica quirúrgica y navegación", "n": 5}, {"code": "B07", "name": "Ortopedia, columna y neuro", "n": 1}, {"code": "B08", "name": "Terapia renal y diálisis", "n": 0}]}, {"id": "4", "name": "Construye hoy los servicios de la próxima década", "desc": "Una categoría nueva no se improvisa: se equipa. Diálisis, oftalmología, oncología y medicina preventiva desde cero.", "n": 92, "subs": [{"code": "B01", "name": "Imagen y radiología", "n": 60}, {"code": "B02", "name": "Laboratorio e IVD", "n": 46}, {"code": "B06", "name": "Cardiovascular e intervencionismo", "n": 18}, {"code": "B09", "name": "Oncología y radioterapia", "n": 13}, {"code": "B20", "name": "Financiamiento y capital", "n": 9}, {"code": "B17", "name": "Atención virtual y remota", "n": 5}, {"code": "B07", "name": "Ortopedia, columna y neuro", "n": 1}, {"code": "B08", "name": "Terapia renal y diálisis", "n": 0}]}], "intel": [{"id": "5", "name": "Expande tu ecosistema de innovación", "desc": "De construir cada capacidad por tu cuenta a una red de aliados que te acerca la frontera.", "n": 31, "subs": [{"code": "B09", "name": "Oncología y radioterapia", "n": 13}, {"code": "B22", "name": "Educación y alianzas académicas", "n": 12}, {"code": "B21", "name": "Investigación clínica y CROs", "n": 7}, {"code": "B04", "name": "Robótica quirúrgica y navegación", "n": 5}, {"code": "B23", "name": "Farmacéuticas y biotecnología", "n": 0}]}]};
+const SECTORS=[
+ {id:'all', name:'Todos',            live:true},
+ {id:'ph',  name:'Hospitales privados', live:true},
+ {id:'clin',name:'Clínicas',         live:false},
+ {id:'pharm',name:'Farmacias',       live:false},
+];
+const PILLARS=[
+ {key:'digital',name:'Digitalización, IA\u00A0y Tecnología',   c:'var(--digital)'},
+ {key:'infra',  name:'Infraestructura\u00A0y Equipamiento',        c:'var(--infra)'},
+ {key:'intel',  name:'Inteligencia\u00A0e Innovación Clínica',c:'var(--intel)'},
+];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let sector=null;
+const seg=document.getElementById('seg'), thumb=document.getElementById('thumb'),
+      cols=document.getElementById('cols');
+
+const COUNTRIES=[
+ {id:'all',name:'Todos',live:true},{id:'mx',name:'México',live:true},
+ {id:'br',name:'Brasil',live:false},{id:'cl',name:'Chile',live:false},
+ {id:'ar',name:'Argentina',live:false},{id:'co',name:'Colombia',live:false},
+];
+let country='all';
+const segC=document.getElementById('segC'), thumbC=document.getElementById('thumbC');
+COUNTRIES.forEach(c=>{
+  const b=document.createElement('button');
+  b.textContent=c.name; b.dataset.ctry=c.id;
+  b.setAttribute('aria-pressed', c.id===country);
+  segC.appendChild(b);
+});
+function moveThumbC(btn){
+  if(!btn){segC.classList.remove('on');return;}
+  thumbC.style.width=btn.offsetWidth+'px';
+  thumbC.style.transform=`translateX(${btn.offsetLeft-3}px)`;
+  segC.classList.add('on');
+}
+segC.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-ctry]'); if(!b) return;
+  country=b.dataset.ctry;
+  segC.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', x.dataset.ctry===country));
+  moveThumbC(b); closeBucket(); clearMark(); render();
+});
+SECTORS.forEach(s=>{
+  const b=document.createElement('button');
+  b.textContent=s.name; b.dataset.sec=s.id; b.setAttribute('aria-pressed','false');
+  seg.appendChild(b);
+});
+cols.innerHTML='<aside class="panel" id="pBuy"></aside>'+PILLARS.map(p=>`
+  <section class="col" id="c-${p.key}" style="--c:${p.c}">
+    <div class="rule"></div><h2>${p.name}</h2>
+    <div class="tot"></div><div class="body"></div>
+  </section>`).join('')+'<aside class="panel" id="pSell"></aside>';
+
+function moveThumb(btn){
+  if(!btn){ seg.classList.remove('on'); return; }
+  thumb.style.width=btn.offsetWidth+'px';
+  thumb.style.transform=`translateX(${btn.offsetLeft-3}px)`;
+  seg.classList.add('on');
+}
+
+function render(){
+  const meta = sector && SECTORS.find(s=>s.id===sector);
+  PILLARS.forEach((p,pi)=>{
+    const el=document.getElementById('c-'+p.key),
+          tot=el.querySelector('.tot'), body=el.querySelector('.body');
+    el.classList.toggle('live', !!sector);
+    if(!sector){
+      tot.innerHTML='<span class="await">Elige un sector</span>';
+      body.innerHTML='';
+      return;
+    }
+    const cmeta=COUNTRIES.find(c=>c.id===country);
+    if(!meta.live||!cmeta.live){
+      tot.innerHTML='';
+      body.innerHTML=`<p class="empty">Aún no mapeado — ${esc(cmeta.live?meta.name:cmeta.name)} no tiene iniciativas registradas en esta versión.</p>`;
+      return;
+    }
+    const gs=DATA[p.key];
+    tot.innerHTML='';
+    body.innerHTML=gs.map(g=>`
+      <div class="row">
+        <div class="hd"><div class="nm">${esc(g.name)}</div></div>
+        <div class="desc">${esc(g.desc)}</div>
+        <div class="subs">${g.subs.map(s=>
+          `<span class="${s.n?'':'zero'}" ${s.n?`role="button" tabindex="0" data-b="${s.code}"`:''}
+            >${esc(s.name)}</span>`).join('')}</div>
+      </div>`).join('');
+    [...body.querySelectorAll('.row')].forEach((n,i)=>{
+      n.style.animationDelay=(pi*110+i*150)+'ms'; n.classList.add('in');
+    });
+  });
+}
+
+const PCOL={digital:'var(--digital)',infra:'var(--infra)',intel:'var(--intel)'};
+function pillarOf(code){for(const k in DATA)for(const g of DATA[k])if(g.subs.some(s=>s.code===code))return k;}
+function openBucket(code, chip){
+  const d=DETAIL[code]; if(!d) return;
+  const host0=chip.closest('.col');
+  const key=host0 ? host0.id.replace('c-','') : pillarOf(code);
+  const col=PCOL[key]||'var(--navy)';
+  document.querySelectorAll('.col').forEach(c=>c.classList.toggle('sel', c.id==='c-'+key));
+  const host=host0||document.getElementById('c-'+key);
+  host.querySelectorAll('.row').forEach(r=>r.classList.remove('sel'));
+  chip.closest('.row').classList.add('sel');
+  host.querySelectorAll('.subs span').forEach(x=>x.classList.toggle('on', x===chip));
+  const ppl=a=>a&&a.length?`<div class="ppl">${a.map(x=>
+      `<div class="p"><span class="a">${esc(x.n)}</span><span class="b">${esc(x.r)}</span><span class="c">${esc(x.l)}</span></div>`).join('')}</div>`
+      :'<div class="ud muted">Contactos en investigación.</div>';
+  const divs=(list,side)=>list.length?list.map((v,j)=>`
+      <div class="dvw" data-div="${side}${j}" data-codes="${v.codes.join(',')}">
+        <div class="dvn">${esc(v.div)}<span class="chev">›</span></div>
+        <div class="det">${v.desc?`<div class="ddesc"><span>Qué es</span>${esc(v.desc)}</div>`:''}${v.why?`<div class="why"><span>Por qué aquí</span>${esc(v.why)}</div>`:''}${pplGroups(v)}</div></div>`).join('')
+    :'<div class="ud muted">Divisions not yet mapped for this group.</div>';
+  const byBuyer=Object.fromEntries(d.buyers.map((b,i)=>[b.co,{...b,i}]));
+  document.getElementById('pBuy').innerHTML=`<h3>Compradores</h3>
+    ${(d.bsectors||[]).map(sec=>`<div class="tier"><button class="th"><span>${esc(sec.s)}</span>
+        <em>${sec.cos.length}</em><i class="chev">›</i></button>
+      <div class="tbody">${sec.cos.length
+        ? sec.cos.map(co=>{const b=byBuyer[co]; return `<div class="org" data-org="b${b.i}">
+            <div class="nm">${esc(b.co)}<span class="chev">›</span></div>
+            <div class="det">${divs(b.divs,'b'+b.i+'-')}</div></div>`;}).join('')
+        : '<p class="none">Aún no mapeado.</p>'}</div></div>`).join('')}`;
+  const byCo=Object.fromEntries(d.sellers.map(v=>[v.co,v]));
+  const TDEF={
+    Leaders:'Portafolio de salud amplio y multicategoría, presente en muchas funciones del hospital',
+    Specialists:'Experiencia profunda en uno o pocos dominios clínicos u operativos',
+    Startups:'Emergentes, diferenciadas, aún construyendo escala',
+    Enablers:'La salud no es su mercado principal, pero la habilitan'};
+  const tier=(label,list)=>list.length?`<div class="tier"><button class="th"><span>${label}</span>
+        <em>${list.length}</em><i class="chev">›</i></button>
+      <div class="tbody"><div class="tdef">${TDEF[label]}</div>
+      ${list.map((x,i)=>{
+        const v=x.anchor?byCo[x.co]:null;
+        return v?`<div class="org anchor" data-org="s${label[0]}${i}">
+            <div class="nm">${esc(x.co)}<span class="tag">ancla</span><span class="chev">›</span></div>
+            <div class="det">${divs(v.divs,'s'+label[0]+i+'-')}</div></div>`
+          :`<div class="org other"><div class="nm">${esc(x.co)}</div></div>`;
+      }).join('')}</div></div>`:'';
+  document.getElementById('pSell').innerHTML=`<h3>Proveedores</h3>
+    ${tier('Leaders',d.tiers.Leaders)}${tier('Specialists',d.tiers.Specialists)}${tier('Enablers',d.tiers.Enablers||[])}${tier('Startups',d.tiers.Startups)}`;
+  document.getElementById('backrow').innerHTML='<button class="back" id="back">← Todos los temas</button>';
+  document.getElementById('back').onclick=closeBucket;
+  const b=document.body, sel=host, all=[...document.querySelectorAll('.col')];
+  const idx=all.indexOf(sel), step=document.getElementById('cols').offsetWidth/3;
+  clearTimeout(window.__t1);
+  all.forEach(c=>{ if(c!==sel){ c.classList.add('mute'); c.style.transform='scale(.96)'; } });
+  sel.querySelectorAll('.row').forEach(r=>{
+    r.classList.toggle('hide', r!==chip.closest('.row'));
+    r.classList.toggle('solo', r===chip.closest('.row'));
+  });
+  sel.querySelector('.tot').classList.add('hide');
+  sel.querySelectorAll('.subs span').forEach(x=>x.classList.toggle('dim', x!==chip));
+  sel.style.transform=`translateX(${(1-idx)*step}px)`;
+  b.classList.add('focused');
+  clearFilter();
+  ['pBuy','pSell'].forEach(id=>window.__ro&&window.__ro.observe(document.getElementById(id)));
+  requestAnimationFrame(syncHeight); setTimeout(syncHeight,120); setTimeout(syncHeight,620);
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('solo','drill'));
+  document.querySelectorAll('.dvw').forEach(x=>x.classList.remove('only'));
+}
+function closeBucket(){
+  const b=document.body;
+  clearTimeout(window.__t1);
+  b.classList.remove('focused');
+  document.querySelectorAll('.col').forEach(c=>{
+    c.classList.remove('mute','sel'); c.style.transform=''; });
+  document.querySelectorAll('.row').forEach(r=>r.classList.remove('hide','solo','sel'));
+  document.querySelectorAll('.tot').forEach(t=>t.classList.remove('hide'));
+  document.querySelectorAll('.subs span').forEach(x=>x.classList.remove('dim','on'));
+  document.getElementById('cols').style.minHeight='';
+  window.__t1=setTimeout(()=>{document.getElementById('backrow').innerHTML='';},420);
+}
+function syncHeight(){
+  const cols=document.getElementById('cols');
+  if(!document.body.classList.contains('focused')){ cols.style.minHeight=''; return; }
+  const h=[document.getElementById('pBuy'),document.getElementById('pSell'),
+           document.querySelector('.col.sel')]
+    .filter(Boolean).map(e=>e.scrollHeight);
+  cols.style.minHeight=(Math.max(...h)+8)+'px';
+}
+if(window.ResizeObserver){
+  const ro=new ResizeObserver(()=>syncHeight());
+  window.__ro=ro;
+}
+function clearCross(){
+  document.body.classList.remove('filtered');
+  document.querySelector('.filtbar')?.remove();
+  ['pSell','pBuy'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.classList.remove('drill');
+    el.querySelectorAll('.org,.dvw,.tier').forEach(x=>x.classList.remove('dimmed','filt'));
+  });
+}
+function clearFilter(){
+  document.body.classList.remove('filtered');
+  ['pSell','pBuy'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.classList.remove('solo','drill');
+    el.querySelectorAll('.tier').forEach(t=>t.classList.remove('open'));
+  });
+  document.querySelectorAll('.org,.dvw,.tier').forEach(x=>x.classList.remove('dimmed','filt'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('drill'));
+  document.querySelectorAll('.dvw').forEach(x=>x.classList.remove('only'));
+  const fb=document.querySelector('.filtbar'); if(fb) fb.remove();
+}
+function crossFilter(codes,label,srcEl,targetId){
+  const set=new Set(codes.split(','));
+  const tgt=document.getElementById(targetId);
+  tgt.classList.remove('drill');
+  tgt.querySelectorAll('.org').forEach(o=>{
+    const ws=[...o.querySelectorAll('.dvw')];
+    if(!ws.length){ o.classList.remove('dimmed'); o.classList.remove('open'); return; }
+    let any=false;
+    ws.forEach(w=>{
+      const hit=w.dataset.codes.split(',').some(c=>set.has(c));
+      w.classList.toggle('dimmed',!hit);
+      w.classList.toggle('filt',hit);
+      w.classList.toggle('open',hit);          // matching units open, showing their people
+      if(hit) any=true;
+    });
+    o.classList.remove('dimmed');
+    o.classList.toggle('open',any);            // and the company opens with them
+    if(!any) ws.forEach(w=>w.classList.remove('dimmed','filt','open'));
+  });
+  tgt.querySelectorAll('.tier').forEach(t=>{
+    const live=[...t.querySelectorAll('.org')].some(o=>!o.classList.contains('dimmed'));
+    t.classList.toggle('dimmed',!live);
+    if(live) t.classList.add('open');
+  });
+  const src=targetId==='pSell'?'pBuy':'pSell';
+  document.querySelectorAll('#'+src+' .dvw').forEach(w=>w.classList.toggle('filt',w===srcEl));
+  document.querySelector('.filtbar')?.remove();
+  const bar=document.createElement('div'); bar.className='filtbar';
+  bar.innerHTML=`${targetId==='pSell'?'Proveedores':'Compradores'} filtrados por ${label}<button>limpiar</button>`;
+  bar.querySelector('button').onclick=clearFilter;
+  tgt.appendChild(bar);
+  document.body.classList.add('filtered');
+  setTimeout(syncHeight,40); setTimeout(syncHeight,600);
+}
+document.addEventListener('click',e=>{
+  const th=e.target.closest('.th');
+  if(th){ th.parentElement.classList.toggle('open');
+    setTimeout(syncHeight,40); setTimeout(syncHeight,600); return; }
+  const w=e.target.closest('.dvw');
+  if(w){
+    e.stopPropagation();
+    const open=w.classList.contains('open');
+    const box=w.closest('.det'), panel=w.closest('.panel');
+    box.querySelectorAll('.dvw').forEach(x=>{x.classList.remove('open','only');});
+    if(!open){
+      w.classList.add('open');
+      // hoist the chosen division: siblings collapse away, other tiers hide
+      box.querySelectorAll('.dvw').forEach(x=>x.classList.toggle('only', x!==w));
+      panel.classList.add('drill');
+    } else {
+      panel.classList.remove('drill');
+      box.querySelectorAll('.dvw').forEach(x=>x.classList.remove('only'));
+    }
+  setTimeout(syncHeight,40); setTimeout(syncHeight,600);
+    if(!open){
+      const label=w.querySelector('.dvn').childNodes[0].textContent.trim();
+      crossFilter(w.dataset.codes, label, w, w.closest('#pBuy')?'pSell':'pBuy');
+    } else {
+      clearCross();
+      const tgt=document.getElementById(panel.id==='pSell'?'pBuy':'pSell');
+      tgt.querySelectorAll('.dvw').forEach(x=>x.classList.remove('open','only','filt','dimmed'));
+      tgt.querySelectorAll('.org').forEach(x=>x.classList.remove('open','dimmed'));
+      tgt.classList.remove('solo','drill');
+    }
+    return;
+  }
+  const o=e.target.closest('.org'); if(!o) return;
+  const host=o.closest('.panel'); if(!host) return;
+  const was=o.classList.contains('open');
+  host.querySelectorAll('.org').forEach(x=>x.classList.remove('open'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('drill'));
+  document.querySelectorAll('.dvw').forEach(x=>x.classList.remove('only'));
+  if(!was){ o.classList.add('open'); host.classList.add('solo'); clearCross(); }
+  else { host.classList.remove('solo'); clearCross(); }
+  setTimeout(syncHeight,40); setTimeout(syncHeight,600);
+});
+document.getElementById('cols').addEventListener('click',e=>{
+  const c=e.target.closest('[data-b]'); if(c) openBucket(c.dataset.b,c);
+});
+document.getElementById('cols').addEventListener('keydown',e=>{
+  if(e.key!=='Enter'&&e.key!==' ')return;
+  const c=e.target.closest('[data-b]'); if(c){e.preventDefault();openBucket(c.dataset.b,c);}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeBucket();});
+
+/* ---------- company search ---------- */
+const INDEX=(()=>{
+  const m={};
+  for(const code in DETAIL){
+    const d=DETAIL[code];
+    d.buyers.forEach(b=>{ const k=b.co;
+      (m[k]=m[k]||{side:'buyer',co:k,hits:[]}).hits.push({code,codes:(b.divs||[]).flatMap(x=>x.codes)}); });
+    (d.sellers||[]).forEach(v=>{ const k=v.co;
+      (m[k]=m[k]||{side:'seller',co:k,hits:[]}).hits.push({code,codes:v.divs.flatMap(x=>x.codes)}); });
+  }
+  return Object.values(m).sort((a,b)=>b.hits.length-a.hits.length);
+})();
+const q=document.getElementById('q'), sug=document.getElementById('sug');
+let sugItems=[],hi=-1;
+function showSug(){
+  const t=q.value.trim().toLowerCase();
+  sugItems = t ? INDEX.filter(x=>x.co.toLowerCase().includes(t)).slice(0,8) : [];
+  sug.innerHTML=sugItems.map((x,i)=>
+    `<button data-i="${i}"><span>${esc(x.co)}</span><em>${x.side}</em></button>`).join('');
+  sug.classList.toggle('on',!!sugItems.length); hi=-1;
+}
+function agg(list){                     // dedupe divisions across buckets
+  const m={};
+  list.forEach(d=>{ const k=d.div;
+    if(!m[k]) m[k]={div:k,codes:[...d.codes],people:d.people||[],groups:d.groups,desc:d.desc,why:d.why};
+    else m[k].codes=[...new Set([...m[k].codes,...d.codes])]; });
+  return Object.values(m);
+}
+function pplGroups(v){
+  const g=v.groups;
+  if(!g||!g.length) return '<div class="ud muted">Contactos en investigación.</div>';
+  const HEAD='<div class="pphead">Personas</div>';
+  const ini=n=>n.replace(/[^\p{L} ]/gu,'').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  return HEAD+g.map(x=>`<div class="fn${x.people.length?'':' none'}">
+      <h5>${esc(x.f)}${x.people.length>1?`<i>${x.people.length}</i>`:''}</h5>${
+    x.people.length
+      ? `<div class="crew">${x.people.map(y=>
+          `<div class="pc"><span class="av">${esc(ini(y.n))}</span>
+             <span class="tx"><b>${esc(y.n)}</b><em>${esc(y.r)}</em></span></div>`).join('')}</div>`
+      : '<div class="research">En investigación</div>'}</div>`).join('');
+}
+function pplHTML(a){return a&&a.length?`<div class="ppl">${a.map(x=>
+  `<div class="p"><span class="a">${esc(x.n)}</span><span class="b">${esc(x.r)}</span><span class="c">${esc(x.l)}</span></div>`).join('')}</div>`
+  :'<div class="ud muted">Contactos en investigación.</div>';}
+function divHTML(list,pfx){return list.length?list.map((v,j)=>`
+  <div class="dvw" data-div="${pfx}${j}" data-codes="${v.codes.join(',')}">
+    <div class="dvn">${esc(v.div)}<span class="chev">›</span></div>
+    <div class="det">${v.desc?`<div class="ddesc"><span>Qué es</span>${esc(v.desc)}</div>`:''}
+      ${v.why?`<div class="why"><span>Por qué aquí</span>${esc(v.why)}</div>`:''}${pplGroups(v)}</div></div>`).join('')
+  :'<div class="ud muted">Divisiones aún no mapeadas.</div>';}
+
+function go(x){
+  sug.classList.remove('on'); q.value=x.co;
+  closeBucket(); clearMark();
+  if(sector!=='ph'){ const b=seg.querySelector('[data-sec="ph"]'); if(b) b.click(); }
+  setTimeout(()=>{
+    const codes=new Set(x.hits.map(h=>h.code));
+    document.querySelectorAll('#cols .subs span[data-b]').forEach(c=>{
+      c.classList.toggle('match',codes.has(c.dataset.b));
+      c.classList.toggle('faded',!codes.has(c.dataset.b));
+    });
+    const isSeller = x.side==='seller';
+    const selfPanel = isSeller ? 'pSell' : 'pBuy';
+    const otherPanel= isSeller ? 'pBuy'  : 'pSell';
+    const selfKey   = isSeller ? 'sellers' : 'buyers';
+    const otherKey  = isSeller ? 'buyers'  : 'sellers';
+
+    // the searched company, with all its divisions across the matched buckets
+    let mine=[];
+    codes.forEach(c=>(DETAIL[c][selfKey]||[]).forEach(o=>{ if(o.co===x.co) mine.push(...(o.divs||[])); }));
+    document.getElementById(selfPanel).innerHTML=
+      `<h3>${isSeller?'Proveedor':'Comprador'}</h3>
+       <div class="org open solo-one"><div class="nm">${esc(x.co)}</div>
+         <div class="det">${divHTML(agg(mine),'m')}</div></div>`;
+
+    // the counterpart side, with their divisions where the demand sits
+    const other={};
+    codes.forEach(c=>(DETAIL[c][otherKey]||[]).forEach(o=>{
+      if(o.co===x.co) return;
+      (other[o.co]=other[o.co]||{co:o.co,divs:[],n:0}).n++;
+      other[o.co].divs.push(...(o.divs||[]));
+    }));
+    let list=Object.values(other).sort((a,b)=>b.n-a.n);
+    if(!isSeller===false){                       // counterpart is the buyer side
+      const gi=list.findIndex(o=>o.co.includes('Ángeles'));
+      if(gi>0) list=[list[gi],...list.filter((_,k)=>k!==gi)];
+    }
+    document.getElementById(otherPanel).innerHTML=
+      `<h3>${isSeller?'Compradores':'Proveedores'}</h3>${list.map((o,i)=>`
+        <div class="org" data-org="x${i}">
+          <div class="nm">${esc(o.co)}<span class="chev">›</span></div>
+          <div class="det">${divHTML(agg(o.divs),'x'+i+'-')}</div></div>`).join('')
+        ||'<p class="none">Sin contraparte mapeada.</p>'}`;
+
+    document.body.classList.add('cofocus','marked');
+    document.getElementById('markbar').innerHTML=
+      `<div class="mkhd"><b>${esc(x.co)}</b> · ${codes.size} categoría${codes.size>1?'s':''} de solución resaltada${codes.size>1?'s':''}
+        <button id="clearmark">limpiar</button></div>`;
+    document.getElementById('clearmark').onclick=clearMark;
+    setTimeout(syncHeight,60); setTimeout(syncHeight,620);
+  }, sector==='ph'?60:320);
+}
+function clearMark(){
+  document.body.classList.remove('marked','cofocus');
+  document.querySelectorAll('#cols .subs span').forEach(c=>c.classList.remove('match','faded'));
+  ['pBuy','pSell'].forEach(id=>{const e=document.getElementById(id); if(e) e.innerHTML='';});
+  document.getElementById('markbar').innerHTML='';
+  document.getElementById('cols').style.minHeight='';
+  q.value='';
+}
+q.addEventListener('input',showSug);
+q.addEventListener('keydown',e=>{
+  if(!sugItems.length) return;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault();
+    hi=(hi+(e.key==='ArrowDown'?1:-1)+sugItems.length)%sugItems.length;
+    [...sug.children].forEach((b,i)=>b.classList.toggle('hi',i===hi)); }
+  else if(e.key==='Enter'){ e.preventDefault(); go(sugItems[hi<0?0:hi]); }
+  else if(e.key==='Escape'){ sug.classList.remove('on'); }
+});
+sug.addEventListener('click',e=>{const b=e.target.closest('[data-i]'); if(b) go(sugItems[+b.dataset.i]);});
+document.addEventListener('click',e=>{if(!e.target.closest('.search')) sug.classList.remove('on');});
+
+seg.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-sec]'); if(!b) return;
+  closeBucket(); clearMark();
+  sector = sector===b.dataset.sec ? null : b.dataset.sec;
+  seg.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', x.dataset.sec===sector));
+  moveThumb(sector?b:null);
+  render();
+});
+window.addEventListener('resize',()=>{
+  syncHeight();
+  const sel=document.querySelector('.col.sel');
+  if(sel&&document.body.classList.contains('focused')){
+    const all=[...document.querySelectorAll('.col')], i=all.indexOf(sel);
+    sel.style.transition='none';
+    sel.style.transform=`translateX(${(1-i)*(document.getElementById('cols').offsetWidth/3)}px)`;
+    sel.offsetWidth; sel.style.transition='';
+  }
+  const b=seg.querySelector('button[aria-pressed="true"]'); if(b) moveThumb(b);
+});
+requestAnimationFrame(()=>{
+  moveThumbC(segC.querySelector('[aria-pressed="true"]'));
+  const b=seg.querySelector('[data-sec="all"]'); if(b) b.click();
+});
+</script>
+</body>
+</html>
